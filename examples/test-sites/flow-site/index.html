@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow Site — ocufuzz</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 36rem; margin: 2rem auto; padding: 0 1rem; }
+    .step { display: none; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; }
+    .step.active { display: block; }
+    #s1 { background: #e3f2fd; }
+    #s2 { background: #fff3e0; }
+    #s3 { background: #f3e5f5; }
+    button { margin: 0.25rem 0.5rem 0.25rem 0; padding: 0.5rem 0.75rem; cursor: pointer; }
+    nav { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Flow site</h1>
+  <p>Multi-step “wizard” without full page reloads (control-flow branches).</p>
+  <nav>
+    <button type="button" data-go="1">Step 1</button>
+    <button type="button" data-go="2">Step 2</button>
+    <button type="button" data-go="3">Step 3</button>
+  </nav>
+  <section id="s1" class="step active">
+    <h2>Step 1 — Start</h2>
+    <p>Choose a branch to step 2.</p>
+    <button type="button" id="to2a">Continue as guest</button>
+    <button type="button" id="to2b">Continue with account</button>
+  </section>
+  <section id="s2" class="step">
+    <h2>Step 2 — Branch</h2>
+    <p id="branchLabel"></p>
+    <button type="button" id="to3">Finish</button>
+  </section>
+  <section id="s3" class="step">
+    <h2>Step 3 — Done</h2>
+    <p>Flow complete. You can reset to step 1.</p>
+    <button type="button" id="reset">Reset</button>
+  </section>
+  <p><a href="../widgets-site/">← Widgets site</a></p>
+  <script>
+    function show(n) {
+      document.querySelectorAll(".step").forEach(function (el) { el.classList.remove("active"); });
+      document.getElementById("s" + n).classList.add("active");
+    }
+    document.querySelectorAll("[data-go]").forEach(function (btn) {
+      btn.addEventListener("click", function () { show(btn.getAttribute("data-go")); });
+    });
+    document.getElementById("to2a").onclick = function () {
+      document.getElementById("branchLabel").textContent = "Branch: guest";
+      show(2);
+    };
+    document.getElementById("to2b").onclick = function () {
+      document.getElementById("branchLabel").textContent = "Branch: account";
+      show(2);
+    };
+    document.getElementById("to3").onclick = function () { show(3); };
+    document.getElementById("reset").onclick = function () { show(1); };
+  </script>
+</body>
+</html>
