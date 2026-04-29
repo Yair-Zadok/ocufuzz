@@ -1,0 +1,1 @@
+This local site is for testing ocufuzz only. It is intentionally small, static, and includes a couple of obvious UI issues for exploratory runs to discover.

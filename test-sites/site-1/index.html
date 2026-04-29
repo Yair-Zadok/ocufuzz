@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OcuMart Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f3ec;
+      --ink: #1f2933;
+      --muted: #687385;
+      --card: #fffaf2;
+      --accent: #ec6f3d;
+      --accent-dark: #b8491f;
+      --line: #eadfce;
+      --ok: #0f7a55;
+      --bad: #b42318;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(236, 111, 61, 0.22), transparent 34rem),
+        linear-gradient(135deg, #fffdf8 0%, var(--bg) 100%);
+      color: var(--ink);
+    }
+
+    main {
+      width: min(70rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 3rem;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 7vw, 5.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+    }
+
+    h2, h3 {
+      margin-top: 0;
+    }
+
+    p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .hero-card, .panel {
+      background: rgba(255, 250, 242, 0.86);
+      border: 1px solid var(--line);
+      border-radius: 1.35rem;
+      box-shadow: 0 24px 70px rgba(72, 54, 32, 0.12);
+      padding: 1.25rem;
+    }
+
+    .hero-card {
+      transform: rotate(1.4deg);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      background: #fff0e7;
+      color: var(--accent-dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .product {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: white;
+    }
+
+    .product:last-child {
+      margin-bottom: 0;
+    }
+
+    .swatch {
+      width: 4.25rem;
+      height: 4.25rem;
+      border-radius: 1.1rem;
+      display: grid;
+      place-items: center;
+      font-size: 1.7rem;
+      background: linear-gradient(135deg, #ffc9a8, #fff3c4);
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.7rem 1rem;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    button:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: #283849;
+    }
+
+    button.ghost {
+      background: #fff;
+      color: var(--accent-dark);
+      border: 1px solid #f3b190;
+    }
+
+    .cart-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .cart-row:last-child {
+      border-bottom: 0;
+    }
+
+    .empty {
+      padding: 1rem;
+      border-radius: 0.9rem;
+      background: #ffffffb8;
+      color: var(--muted);
+    }
+
+    .total {
+      display: flex;
+      justify-content: space-between;
+      margin: 1rem 0;
+      padding-top: 1rem;
+      border-top: 2px solid var(--line);
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    form {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.35rem;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid #d8cbbb;
+      border-radius: 0.75rem;
+      padding: 0.75rem 0.85rem;
+      background: white;
+      color: var(--ink);
+    }
+
+    .notice {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.9rem;
+      border-radius: 0.85rem;
+      font-weight: 800;
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .notice.ok {
+      background: #eaf8f1;
+      color: var(--ok);
+    }
+
+    .notice.bad {
+      background: #fff0ed;
+      color: var(--bad);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 760px) {
+      header, .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <span class="tag">Local test shop</span>
+        <h1>OcuMart makes bugs easy to spot.</h1>
+        <p>
+          A compact demo storefront for exploratory browser runs. It looks friendly,
+          has a few normal interactions, and includes two intentionally obvious issues.
+        </p>
+      </div>
+      <aside class="hero-card">
+        <h2>Today only</h2>
+        <p>Build a tiny cart, apply the launch discount, and complete checkout.</p>
+        <button type="button" class="secondary" id="quickAdd">Add starter bundle</button>
+      </aside>
+    </header>
+
+    <section class="layout" aria-label="Shopping demo">
+      <div class="panel">
+        <h2>Featured items</h2>
+        <article class="product">
+          <div class="swatch" aria-hidden="true">FB</div>
+          <div>
+            <h3>Focus Beans</h3>
+            <p>$12.00 - Bright coffee for late-night bug hunts.</p>
+            <button type="button" data-add="Explorer Map" data-price="15">Add to cart</button>
+          </div>
+        </article>
+        <article class="product">
+          <div class="swatch" aria-hidden="true">QT</div>
+          <div>
+            <h3>QA Tonic</h3>
+            <p>$8.00 - A sparkling bottle of suspicious confidence.</p>
+            <button type="button" data-add="Focus Beans" data-price="12">Add to cart</button>
+          </div>
+        </article>
+        <article class="product">
+          <div class="swatch" aria-hidden="true">EM</div>
+          <div>
+            <h3>Explorer Map</h3>
+            <p>$15.00 - Paper map with far too many affordances.</p>
+            <button type="button" data-add="QA Tonic" data-price="8">Add to cart</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="panel">
+        <h2>Your cart</h2>
+        <div id="cart" class="empty">Your cart is empty.</div>
+        <div class="total"><span>Total</span><span id="total">$0.00</span></div>
+        <button type="button" class="ghost" id="discount">Apply 10% launch discount</button>
+
+        <form id="checkout">
+          <label>
+            Email
+            <input id="email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <label>
+            Delivery speed
+            <select id="speed">
+              <option value="">Choose a speed</option>
+              <option>Standard</option>
+              <option>Express</option>
+            </select>
+          </label>
+          <button type="submit">Place order</button>
+        </form>
+        <div id="message" class="notice" role="status"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    var items = [];
+    var discountMultiplier = 1;
+    var cart = document.getElementById("cart");
+    var total = document.getElementById("total");
+    var message = document.getElementById("message");
+
+    function dollars(value) {
+      return "$" + value.toFixed(2);
+    }
+
+    function renderCart() {
+      if (!items.length) {
+        cart.className = "empty";
+        cart.textContent = "Your cart is empty.";
+      } else {
+        cart.className = "";
+        cart.innerHTML = items.map(function (item) {
+          return "<div class=\"cart-row\"><span>" + item.name + "</span><strong>" + dollars(item.price) + "</strong></div>";
+        }).join("");
+      }
+
+      var subtotal = items.reduce(function (sum, item) { return sum + item.price; }, 0);
+      var finalTotal = subtotal * discountMultiplier;
+      total.textContent = dollars(finalTotal);
+    }
+
+    function addItem(name, price) {
+      items.push({ name: name, price: price });
+      renderCart();
+    }
+
+    document.querySelectorAll("[data-add]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        addItem(button.getAttribute("data-add"), Number(button.getAttribute("data-price")));
+      });
+    });
+
+    document.getElementById("quickAdd").addEventListener("click", function () {
+      addItem("Focus Beans", 12);
+      addItem("QA Tonic", 8);
+    });
+
+    document.getElementById("discount").addEventListener("click", function () {
+      discountMultiplier = discountMultiplier * 0.9;
+      renderCart();
+      message.className = "notice ok show";
+      message.textContent = "Launch discount applied.";
+    });
+
+    document.getElementById("checkout").addEventListener("submit", function (event) {
+      event.preventDefault();
+      var email = document.getElementById("email").value.trim();
+      var speed = document.getElementById("speed").value;
+
+      if (!email || !items.length) {
+        message.className = "notice bad show";
+        message.textContent = "Please enter an email and add at least one item.";
+        return;
+      }
+
+      message.className = "notice ok show";
+      message.textContent = "Order placed for " + email + ". Delivery: " + (speed || "not selected") + ".";
+    });
+
+    renderCart();
+  </script>
+</body>
+</html>

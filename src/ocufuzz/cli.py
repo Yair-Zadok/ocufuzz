@@ -10,7 +10,7 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="ocufuzz: browser-use exploration smoke runner")
-    parser.add_argument("url", help="Full URL to open (e.g. http://127.0.0.1:8765/forms-site/)")
+    parser.add_argument("url", help="Full URL to open (e.g. http://127.0.0.1:8765/site-1/)")
     parser.add_argument(
         "--task",
         default=None,
@@ -35,7 +35,13 @@ def main() -> None:
     parser.add_argument(
         "--model",
         default=None,
-        help="Override Gemini model for this run (otherwise uses OCU_GEMINI_MODEL/default).",
+        help="Override model for this run (default: qwen3.5:9b for Ollama).",
+    )
+    parser.add_argument(
+        "--provider",
+        choices=["ollama", "google"],
+        default=None,
+        help="LLM provider to use (default: OCU_LLM_PROVIDER or ollama).",
     )
     args = parser.parse_args()
 
@@ -46,6 +52,7 @@ def main() -> None:
             args.url,
             task=args.task,
             model=args.model,
+            provider=args.provider,
             max_steps=args.max_steps,
             artifacts_root=args.artifacts,
             headless=not args.headed,

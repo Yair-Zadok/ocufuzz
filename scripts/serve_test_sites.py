@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Serves ``examples/test-sites`` on http://127.0.0.1:8765/ for local smoke runs.
+# Serves ``test-sites`` on http://127.0.0.1:8765/ for local smoke runs.
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def main() -> None:
     args = parser.parse_args()
 
     repo = Path(__file__).resolve().parents[1]
-    root = repo / "examples" / "test-sites"
+    root = repo / "test-sites"
     if not root.is_dir():
         print(f"Missing folder: {root}", file=sys.stderr)
         sys.exit(1)
@@ -33,9 +33,7 @@ def main() -> None:
 
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Serving {root} at http://{args.host}:{args.port}/")
-    print("  forms:   http://%s:%s/forms-site/" % (args.host, args.port))
-    print("  widgets: http://%s:%s/widgets-site/" % (args.host, args.port))
-    print("  flow:    http://%s:%s/flow-site/" % (args.host, args.port))
+    print("  site-1:  http://%s:%s/site-1/" % (args.host, args.port))
     try:
         server.serve_forever()
     except KeyboardInterrupt:

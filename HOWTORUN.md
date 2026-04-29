@@ -10,16 +10,29 @@ playwright install chromium
 
 Set:
 
-- `GOOGLE_API_KEY` — required for Gemini.
-- Optional: `OCU_GEMINI_MODEL` (default: `gemini-3.1-flash-lite-preview`).
-- Optional: `OCU_FALLBACK_GEMINI_MODEL` (default: `gemini-3.1-flash-preview`).
+- Optional: `OCU_LLM_PROVIDER` (default: `ollama`; also supports `google`).
+- Optional: `OCU_OLLAMA_MODEL` (default: `qwen3.5:9b`).
+- Optional: `OCU_OLLAMA_BASE_URL` (default: `http://localhost:11434`).
+- Optional: `OCU_OLLAMA_MAX_TOKENS` (default: `2048`).
+- Optional: `OCU_OLLAMA_MAX_RETRIES` (default: `2`).
+- `GOOGLE_API_KEY` — required only when using `--provider google`.
+- Optional: `OCU_GEMINI_MODEL` (default: `gemini-3.1-flash-lite-preview`, for Google).
+- Optional: `OCU_FALLBACK_GEMINI_MODEL` (default: `gemini-3.1-flash-preview`, for Google).
 - Optional: `OCU_MAX_HISTORY_ITEMS` (default: `10`).
 - $env:GOOGLE_API_KEY = ""
 
-The default runner uses Gemini 3.1 Flash-Lite Preview with thinking disabled
+The default runner uses local Ollama via LiteLLM with `qwen3.5:9b`.
+Make sure Ollama is running and the model is pulled:
+
+```powershell
+ollama pull qwen3.5:9b
+ollama serve
+```
+
+Gemini remains available with `--provider google` and uses thinking disabled
 (`thinking_budget=0`).
 
-## Local test sites
+## Local test site
 
 In one terminal:
 
@@ -29,16 +42,14 @@ python scripts/serve_test_sites.py
 
 Opens:
 
-- `http://127.0.0.1:8765/forms-site/`
-- `http://127.0.0.1:8765/widgets-site/`
-- `http://127.0.0.1:8765/flow-site/`
+- `http://127.0.0.1:8765/site-1/`
 
 ## Exploration smoke run
 
 With the server running, in another terminal:
 
 ```bash
-python -m ocufuzz "http://127.0.0.1:8765/forms-site/" --max-steps 12
+python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12
 ```
 
 This efficient default keeps browser-use execution and QA issue detection in the same step loop:
@@ -52,13 +63,20 @@ This efficient default keeps browser-use execution and QA issue detection in the
 Optional debugging run with full conversation artifacts:
 
 ```bash
-python -m ocufuzz "http://127.0.0.1:8765/forms-site/" --max-steps 12 --headed
+python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12 --headed
 ```
 
 Optional model override for one run:
 
-```bash
-python -m ocufuzz "http://127.0.0.1:8765/forms-site/" --model gemini-3.1-flash-lite-preview
+```powershell
+python -m ocufuzz "http://127.0.0.1:8765/site-1/" --model qwen3.5:9b
+```
+
+Optional Gemini run:
+
+```powershell
+$env:GOOGLE_API_KEY = "<your key>"
+python -m ocufuzz "http://127.0.0.1:8765/site-1/" --provider google --model gemini-3.1-flash-lite-preview
 ```
 
 ## CLI options
@@ -72,6 +90,7 @@ python -m ocufuzz "http://127.0.0.1:8765/forms-site/" --model gemini-3.1-flash-l
 - `--headed`: Run with a visible browser window (default is headless).
 - `--save-conversation`: Save per-step conversation dumps for debugging (default off).
 - `--model <name>`: Override the model for this run only.
+- `--provider <ollama|google>`: Override the LLM provider for this run only.
 
 Artifacts are written under `artifacts/explore/<run_id>/`:
 
