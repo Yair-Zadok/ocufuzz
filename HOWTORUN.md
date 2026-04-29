@@ -44,7 +44,7 @@ Opens:
 
 - `http://127.0.0.1:8765/site-1/`
 
-## Exploration smoke run
+## Exploration / fuzzing run
 
 With the server running, in another terminal:
 
@@ -52,19 +52,8 @@ With the server running, in another terminal:
 python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12
 ```
 
-This efficient default keeps browser-use execution and QA issue detection in the same step loop:
-- screenshots still captured per step
-- no second screenshot-analysis pass
-- QA note is only recorded when likely incorrect behavior is observed
-- conversation dumps are off by default
-- LLM history is capped via `max_history_items` for lower token growth
-- fallback model is used automatically on provider failures (e.g., rate limits)
+Each invocation creates a session folder `artifacts/explore/fuzz_<id>/` with `run_01/`, …, `report.md`. Use `--runs N` for N sequential agents (default `1`).
 
-Optional debugging run with full conversation artifacts:
-
-```bash
-python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12 --headed
-```
 
 Optional model override for one run:
 
@@ -84,16 +73,16 @@ python -m ocufuzz "http://127.0.0.1:8765/site-1/" --provider google --model gemi
 `python -m ocufuzz <url> [options]`
 
 - `url` (required positional): Full URL to open.
+- `--runs N`: Number of sequential exploration runs (default `1`).
 - `--task <text>`: Override the built-in exploration/QA instructions.
-- `--max-steps <int>`: Maximum number of agent steps (default `12`).
-- `--artifacts <path>`: Root directory for run outputs (default `artifacts/explore`).
+- `--max-steps <int>`: Maximum number of agent steps per run (default `12`).
+- `--artifacts <path>`: Root directory for session outputs (default `artifacts/explore`).
 - `--headed`: Run with a visible browser window (default is headless).
 - `--save-conversation`: Save per-step conversation dumps for debugging (default off).
 - `--model <name>`: Override the model for this run only.
 - `--provider <ollama|google>`: Override the LLM provider for this run only.
 
-Artifacts are written under `artifacts/explore/<run_id>/`:
+Artifacts are written under `artifacts/explore/fuzz_<session_id>/`:
 
-- `run_history.json` — raw `browser-use` history
-- `transitions.json` — ocufuzz transition trace
-- `conversation/` — per-step conversation dumps (only when `--save-conversation` is set)
+- `run_01/`, `run_02/`, … — each contains `run_history.json`, `transitions.json`, and optionally `conversation/`
+- `report.md` — aggregated issues and success rate for the session

@@ -1,9 +1,8 @@
-# Outputs testing sequences to artifacts/explore/run_id/ by using browser-use to walk the website and collect screenshots of the website at each step.
+# Outputs one exploration sequence to a caller-provided directory (browser-use).
 
 from __future__ import annotations
 
 import os
-import uuid
 from pathlib import Path
 
 from browser_use import Agent, Browser, ChatGoogle
@@ -11,11 +10,13 @@ from browser_use.llm.base import BaseChatModel
 from browser_use.llm.litellm.chat import ChatLiteLLM
 
 from ocufuzz.history_parser import transitions_from_agent_history, write_transitions
+from ocufuzz.trace import TransitionTrace
 
 
 DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 MAXIMIZED_VIEW_SIZE = {"width": 1920, "height": 1080}
+DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 120
 
 
 def _ollama_model_name(model: str) -> str:
@@ -68,7 +69,7 @@ def resolve_fallback_llm(provider: str, primary_model: str) -> BaseChatModel | N
 DEFAULT_TASK = (
     "You are a QA agent, you are testing a website for QA issues. Explore visible controls and form flows with short, targeted actions. "
     "Keep memory to one short sentence. Include 'QA: ...' in memory only when behavior appears incorrect or unintended "
-    "(broken control, unintended logic,invalid state transition, bad validation, or surprising navigation, etc). "
+    "(broken control, unintended logic, invalid state transition, or surprising navigation, etc). "
     "Do not include a QA note when no issue is observed."
 )
 
@@ -76,24 +77,27 @@ DEFAULT_TASK = (
 async def run_exploration(
     start_url: str,
     *,
+    artifacts_dir: Path,
     task: str | None = None,
     model: str | None = None,
     provider: str | None = None,
     max_steps: int = 12,
-    artifacts_root: str | Path = "artifacts/explore",
     headless: bool | None = True,
     save_conversation: bool = False,
-) -> Path:
+    prior_summary: str | None = None,
+) -> tuple[Path, TransitionTrace]:
     """
-    Run one `browser-use` agent session against ``start_url`` and write:
+    Run one `browser-use` agent session against ``start_url`` and write into ``artifacts_dir``.
 
     - ``run_history.json`` — serialized agent history
     - ``transitions.json`` — ocufuzz transition trace
     - ``conversation/`` — per-step conversation dumps when enabled
+
+    Returns ``(artifacts_dir, trace)``.
     """
-    run_id = uuid.uuid4().hex[:10]
-    root = Path(artifacts_root) / run_id
+    root = Path(artifacts_dir)
     root.mkdir(parents=True, exist_ok=True)
+    run_id = root.name
     conv_dir = root / "conversation"
     if save_conversation:
         conv_dir.mkdir(parents=True, exist_ok=True)
@@ -102,6 +106,13 @@ async def run_exploration(
     fallback_llm = resolve_fallback_llm(llm_provider, primary_model)
     task_text = task or DEFAULT_TASK
     full_task = f"Start at URL: {start_url}\n\n{task_text}"
+
+    if prior_summary and prior_summary.strip():
+        prior_block = (
+            "Previous QA agents already explored this site. Try different areas and interactions to find new issues.\n"
+            + prior_summary.strip()
+        )
+        full_task = f"{full_task}\n\n{prior_block}"
 
     browser_options: dict[str, object] = {
         "headless": headless,
@@ -115,6 +126,7 @@ async def run_exploration(
     agent = Agent(
         task=full_task,
         llm=llm,
+        llm_timeout=DEFAULT_AGENT_LLM_TIMEOUT_SECONDS,
         flash_mode=True,
         use_thinking=False,
         max_history_items=int(os.getenv("OCU_MAX_HISTORY_ITEMS", "10")),
@@ -134,4 +146,4 @@ async def run_exploration(
         history=history,
     )
     write_transitions(root / "transitions.json", trace)
-    return root
+    return root, trace
