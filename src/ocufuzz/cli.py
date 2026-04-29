@@ -27,6 +27,16 @@ def main() -> None:
         action="store_true",
         help="Run browser headed (default headless).",
     )
+    parser.add_argument(
+        "--save-conversation",
+        action="store_true",
+        help="Persist per-step conversation dumps under artifacts for debugging.",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="Override Gemini model for this run (otherwise uses OCU_GEMINI_MODEL/default).",
+    )
     args = parser.parse_args()
 
     async def _go():
@@ -35,9 +45,11 @@ def main() -> None:
         out = await run_exploration(
             args.url,
             task=args.task,
+            model=args.model,
             max_steps=args.max_steps,
             artifacts_root=args.artifacts,
             headless=not args.headed,
+            save_conversation=args.save_conversation,
         )
         print(f"Artifacts written under: {out.resolve()}")
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +37,34 @@ def _step_error(results: list[Any]) -> str | None:
     return None
 
 
+def _extract_qa_note(text: str | None) -> str | None:
+    if not text:
+        return None
+    match = re.search(r"QA:\s*(.+)", text, flags=re.IGNORECASE)
+    if not match:
+        return None
+    note = match.group(1).strip()
+    return note or None
+
+
+def _strip_qa_note(text: str | None) -> str | None:
+    if not text:
+        return None
+    stripped = re.sub(r"\s*QA:\s*.+$", "", text, flags=re.IGNORECASE).strip()
+    return stripped or None
+
+
+def _qa_severity(note: str | None) -> str | None:
+    if not note:
+        return None
+    lowered = note.lower()
+    if any(token in lowered for token in ("crash", "stuck", "blocked", "broken", "cannot", "can't", "error")):
+        return "high"
+    if any(token in lowered for token in ("unexpected", "wrong", "invalid", "mismatch", "inconsistent")):
+        return "medium"
+    return "low"
+
+
 def transitions_from_agent_history(
     run_id: str,
     start_url: str,
@@ -65,11 +94,15 @@ def transitions_from_agent_history(
                 serialized.append({"repr": repr(act)})
 
         obs_parts: list[str] = []
+        qa_observation: str | None = None
         if mo is not None:
-            if mo.memory:
-                obs_parts.append(f"memory: {mo.memory}")
-            if mo.next_goal:
-                obs_parts.append(f"next_goal: {mo.next_goal}")
+            qa_observation = _extract_qa_note(mo.memory) or _extract_qa_note(mo.next_goal)
+            clean_memory = _strip_qa_note(mo.memory)
+            clean_goal = _strip_qa_note(mo.next_goal)
+            if clean_memory:
+                obs_parts.append(f"memory: {clean_memory}")
+            if clean_goal:
+                obs_parts.append(f"next_goal: {clean_goal}")
         observation = " | ".join(obs_parts) if obs_parts else None
 
         from_state = _state_id(prev_url, prev_title)
@@ -88,6 +121,9 @@ def transitions_from_agent_history(
                 action_summary=f"ERROR: {error}" if error else _action_summary(actions),
                 model_actions=serialized,
                 error=error,
+                qa_observation=qa_observation,
+                qa_severity=_qa_severity(qa_observation),
+                suspected_bug=bool(qa_observation),
                 observation=observation,
             )
         )

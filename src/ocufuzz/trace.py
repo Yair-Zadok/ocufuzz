@@ -27,6 +27,18 @@ class Transition(BaseModel):
         default_factory=list, description="Serialized agent actions for this step."
     )
     error: str | None = Field(None, description="Agent or model error for this step.")
+    qa_observation: str | None = Field(
+        None,
+        description="QA issue note observed during this step; present only for likely incorrect behavior.",
+    )
+    qa_severity: str | None = Field(
+        None,
+        description="Optional severity hint for qa_observation (low, medium, high).",
+    )
+    suspected_bug: bool = Field(
+        False,
+        description="True when a QA issue note was observed for this step.",
+    )
     observation: str | None = Field(
         None,
         description="Agent memory / next goal text useful for graph labels.",
