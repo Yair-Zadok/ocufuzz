@@ -16,7 +16,7 @@ from ocufuzz.trace import TransitionTrace
 DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
 MAXIMIZED_VIEW_SIZE = {"width": 1920, "height": 1080}
-DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 120
+DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 240
 
 
 def _ollama_model_name(model: str) -> str:
@@ -127,8 +127,8 @@ async def run_exploration(
         task=full_task,
         llm=llm,
         llm_timeout=DEFAULT_AGENT_LLM_TIMEOUT_SECONDS,
-        flash_mode=True,
-        use_thinking=False,
+        flash_mode=False,
+        use_thinking=True,
         max_history_items=int(os.getenv("OCU_MAX_HISTORY_ITEMS", "10")),
         browser=browser,
         fallback_llm=fallback_llm,
