@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OcuMart Demo</title>
+  <title>Northline Market</title>
   <style>
     :root {
       color-scheme: light;
@@ -239,36 +239,36 @@
   <main>
     <header>
       <div>
-        <span class="tag">Local test shop</span>
-        <h1>OcuMart makes bugs easy to spot.</h1>
+        <span class="tag">Seasonal storefront</span>
+        <h1>Northline Market</h1>
         <p>
-          A compact demo storefront for exploratory browser runs. It looks friendly,
-          has a few normal interactions, and includes two intentionally obvious issues.
+          Curated essentials for home and travel. Build a cart, apply a launch discount,
+          and complete checkout in a few clicks.
         </p>
       </div>
       <aside class="hero-card">
-        <h2>Today only</h2>
-        <p>Build a tiny cart, apply the launch discount, and complete checkout.</p>
+        <h2>Limited drop</h2>
+        <p>Add a starter bundle and check out before today's offer ends.</p>
         <button type="button" class="secondary" id="quickAdd">Add starter bundle</button>
       </aside>
     </header>
 
     <section class="layout" aria-label="Shopping demo">
       <div class="panel">
-        <h2>Featured items</h2>
+        <h2>Featured picks</h2>
         <article class="product">
           <div class="swatch" aria-hidden="true">FB</div>
           <div>
             <h3>Focus Beans</h3>
-            <p>$12.00 - Bright coffee for late-night bug hunts.</p>
+            <p>$12.00 - Bright roast with a smooth finish.</p>
             <button type="button" data-add="Explorer Map" data-price="15">Add to cart</button>
           </div>
         </article>
         <article class="product">
           <div class="swatch" aria-hidden="true">QT</div>
           <div>
-            <h3>QA Tonic</h3>
-            <p>$8.00 - A sparkling bottle of suspicious confidence.</p>
+            <h3>Citrus Tonic</h3>
+            <p>$8.00 - Sparkling citrus blend for afternoon refresh.</p>
             <button type="button" data-add="Focus Beans" data-price="12">Add to cart</button>
           </div>
         </article>
@@ -276,7 +276,7 @@
           <div class="swatch" aria-hidden="true">EM</div>
           <div>
             <h3>Explorer Map</h3>
-            <p>$15.00 - Paper map with far too many affordances.</p>
+            <p>$15.00 - Folded travel map for weekend planning.</p>
             <button type="button" data-add="QA Tonic" data-price="8">Add to cart</button>
           </div>
         </article>
@@ -348,7 +348,7 @@
 
     document.getElementById("quickAdd").addEventListener("click", function () {
       addItem("Focus Beans", 12);
-      addItem("QA Tonic", 8);
+      addItem("Citrus Tonic", 8);
     });
 
     document.getElementById("discount").addEventListener("click", function () {

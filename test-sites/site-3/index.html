@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clearview Metrics</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f5f7fb; color: #1f2937; }
+    main { width: min(980px, calc(100% - 2rem)); margin: 1.5rem auto 2.5rem; }
+    .hero { margin-bottom: 1rem; }
+    h1 { margin: 0 0 0.4rem; font-size: clamp(1.9rem, 4vw, 2.7rem); }
+    .muted { color: #5f6b7a; }
+    .panel { background: #fff; border: 1px solid #d8dfea; border-radius: 14px; padding: 1rem; box-shadow: 0 14px 36px rgba(25, 35, 60, 0.08); }
+    .toolbar { display: grid; grid-template-columns: 1fr auto auto; gap: 0.7rem; margin-bottom: 0.8rem; }
+    input, select, button { font: inherit; }
+    input, select { border: 1px solid #cad5e5; border-radius: 10px; padding: 0.62rem 0.74rem; }
+    button { border: 0; border-radius: 999px; background: #2f6dff; color: white; font-weight: 700; padding: 0.62rem 1rem; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.65rem; border-bottom: 1px solid #e6ebf4; text-align: left; }
+    .chip { display: inline-block; border-radius: 999px; background: #eaf0ff; color: #2e4f96; padding: 0.2rem 0.55rem; font-size: 0.85rem; }
+    .summary { margin-top: 0.8rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="hero">
+      <h1>Clearview Metrics</h1>
+      <p class="muted">Track campaign conversions and team performance in one workspace.</p>
+    </div>
+    <section class="panel">
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search campaigns..." />
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="paused">Paused</option>
+        </select>
+        <button id="exportBtn" type="button">Export CSV</button>
+      </div>
+      <table aria-label="Campaign table">
+        <thead>
+          <tr><th>Campaign</th><th>Status</th><th>Conversions</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="summary" class="summary"></div>
+    </section>
+  </main>
+
+  <script>
+    var data = [
+      { name: "Spring Search", status: "active", conversions: 24 },
+      { name: "Local Retarget", status: "paused", conversions: 8 },
+      { name: "Brand Lift", status: "active", conversions: 17 }
+    ];
+
+    var rowsEl = document.getElementById("rows");
+    var summaryEl = document.getElementById("summary");
+    var statusFilter = document.getElementById("statusFilter");
+    var searchEl = document.getElementById("search");
+
+    function render() {
+      var query = searchEl.value.trim().toLowerCase();
+      var selected = statusFilter.value;
+      var filtered = data.filter(function (item) {
+        if (selected !== "all" && item.status !== selected) {
+          return false;
+        }
+        return item.name.toLowerCase().indexOf(query) !== -1;
+      });
+
+      rowsEl.innerHTML = filtered.map(function (item) {
+        return "<tr><td>" + item.name + "</td><td><span class=\"chip\">" + item.status + "</span></td><td>" + item.conversions + "</td></tr>";
+      }).join("");
+
+      var total = data.reduce(function (sum, item) { return sum + item.conversions; }, 0);
+      summaryEl.textContent = "Showing " + filtered.length + " campaigns | Total conversions: " + total;
+    }
+
+    searchEl.addEventListener("input", render);
+    statusFilter.addEventListener("change", render);
+    document.getElementById("exportBtn").addEventListener("click", function () {
+      alert("Export started.");
+    });
+
+    render();
+  </script>
+</body>
+</html>

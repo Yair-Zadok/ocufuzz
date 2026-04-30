@@ -25,8 +25,8 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=12, help="Maximum agent steps per run.")
     parser.add_argument(
         "--artifacts",
-        default="artifacts/explore",
-        help="Root directory; each invocation creates a fuzz_<id> session folder here.",
+        default="previous_runs",
+        help="Root directory; each invocation creates a fuzz_<date_time> session folder here.",
     )
     parser.add_argument(
         "--headed",
@@ -36,7 +36,7 @@ def main() -> None:
     parser.add_argument(
         "--save-conversation",
         action="store_true",
-        help="Persist per-step conversation dumps under artifacts for debugging.",
+        help="Persist per-step conversation dumps under the run folder for debugging.",
     )
     parser.add_argument(
         "--model",

@@ -34,6 +34,8 @@ def main() -> None:
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"Serving {root} at http://{args.host}:{args.port}/")
     print("  site-1:  http://%s:%s/site-1/" % (args.host, args.port))
+    print("  site-2:  http://%s:%s/site-2/" % (args.host, args.port))
+    print("  site-3:  http://%s:%s/site-3/" % (args.host, args.port))
     try:
         server.serve_forever()
     except KeyboardInterrupt:

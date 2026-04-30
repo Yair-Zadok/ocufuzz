@@ -52,7 +52,7 @@ With the server running, in another terminal:
 python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12
 ```
 
-Each invocation creates a session folder `artifacts/explore/fuzz_<id>/` with `run_01/`, …, `report.md`. Use `--runs N` for N sequential agents (default `1`).
+Each invocation creates a session folder `previous_runs/fuzz_<date_time>/` with `run_01/`, …, `report.html`. Use `--runs N` for N sequential agents (default `1`).
 
 
 Optional model override for one run:
@@ -76,13 +76,13 @@ python -m ocufuzz "http://127.0.0.1:8765/site-1/" --provider google --model gemi
 - `--runs N`: Number of sequential exploration runs (default `1`).
 - `--task <text>`: Override the built-in exploration/QA instructions.
 - `--max-steps <int>`: Maximum number of agent steps per run (default `12`).
-- `--artifacts <path>`: Root directory for session outputs (default `artifacts/explore`).
+- `--artifacts <path>`: Root directory for session outputs (default `previous_runs`).
 - `--headed`: Run with a visible browser window (default is headless).
 - `--save-conversation`: Save per-step conversation dumps for debugging (default off).
 - `--model <name>`: Override the model for this run only.
 - `--provider <ollama|google>`: Override the LLM provider for this run only.
 
-Artifacts are written under `artifacts/explore/fuzz_<session_id>/`:
+Artifacts are written under `previous_runs/fuzz_<date_time>/`:
 
-- `run_01/`, `run_02/`, … — each contains `run_history.json`, `transitions.json`, and optionally `conversation/`
-- `report.md` — aggregated issues and success rate for the session
+- `run_01/`, `run_02/`, … — each contains `run_history.json`, `transitions.json`, `screenshots/`, and `slideshow.html` (when trace exists)
+- `report.html` — simple failure-oriented session summary (`failed / runs`) with links to failed run slideshows
