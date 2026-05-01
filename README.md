@@ -1,12 +1,10 @@
-
-
 This is ocufuzz, an agentic fuzzer for frontend QA. 
 
 It fuzzes a website with agentic agents running exploratory test sequences guided by summaries of previous runs. 
 
 First, the agents explores and test the website -> reports any QA issues they find -> a summary report of all test sequences is generated.
 
-https://github.com/user-attachments/assets/70fe6165-a18b-426b-930a-dbc6286d0967
+https://github.com/user-attachments/assets/fa24e67d-8c0f-40da-98f3-73afa52d7bcc
 
 See [HOWTORUN.md](HOWTORUN.md) for setup.
 
