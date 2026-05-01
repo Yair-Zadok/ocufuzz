@@ -1,4 +1,4 @@
-"""CLI entrypoint for exploratory runs."""
+# CLI setup
 
 from __future__ import annotations
 

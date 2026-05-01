@@ -8,8 +8,6 @@ from pydantic import BaseModel, Field
 
 
 class Transition(BaseModel):
-    """One exploration step: inferred move from one UI state to another."""
-
     step: int = Field(..., ge=1, description="1-based step index after an agent decision.")
     from_state: str = Field(..., description="Stable id for the prior UI state.")
     to_state: str = Field(..., description="Stable id for the UI state after actions.")
@@ -46,7 +44,7 @@ class Transition(BaseModel):
 
 
 class TransitionTrace(BaseModel):
-    """Full trace for one `browser-use` exploration run."""
+    # The set of transitions captured during one exploration run.
 
     run_id: str
     start_url: str

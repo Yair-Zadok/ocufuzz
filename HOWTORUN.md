@@ -29,8 +29,7 @@ ollama pull qwen3.5:9b
 ollama serve
 ```
 
-Gemini remains available with `--provider google` and uses thinking disabled
-(`thinking_budget=0`).
+Gemini remains available with `--provider google`.
 
 ## Local test site
 

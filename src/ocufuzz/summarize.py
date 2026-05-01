@@ -1,4 +1,4 @@
-# Compact one-line summaries of a transition trace for prior-run context.
+# Summarizes finished runs so later agents can avoid repeating the same path.
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ def _truncate(s: str, max_len: int) -> str:
 
 
 def summarize_run(trace: TransitionTrace) -> str:
-    """One compact line: visited paths, titles, issue texts (no step/issue counts)."""
+    # Describe the useful parts of a run in one prompt-friendly line.
     paths_ordered: list[str] = []
     seen_paths: set[str] = set()
     start_path = _url_path(trace.start_url)
@@ -76,7 +76,7 @@ def summarize_run(trace: TransitionTrace) -> str:
 
 
 def build_prior_summary(summaries: list[tuple[int, str]]) -> str | None:
-    """Build one prompt summary string and cap total chars."""
+    # Join previous run notes without letting the prompt grow without bound.
     if not summaries:
         return None
     full = "\n".join(f"Run {n}: {summary}" for n, summary in summaries).strip()

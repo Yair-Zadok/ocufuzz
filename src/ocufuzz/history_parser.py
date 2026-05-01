@@ -71,7 +71,7 @@ def transitions_from_agent_history(
     task: str,
     history: AgentHistoryList,
 ) -> TransitionTrace:
-    """Map each `AgentHistory` item to one `Transition` row."""
+    # Convert every browser-use step into the trace rows used by reports.
     transitions: list[Transition] = []
     prev_url = start_url
     prev_title: str | None = None

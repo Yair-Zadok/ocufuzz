@@ -1,4 +1,4 @@
-# Build static HTML reports and run slideshows from fuzz run results.
+# Build the HTML report for failed runs.
 
 from __future__ import annotations
 
@@ -31,28 +31,15 @@ def _collect_issue_lines(trace: TransitionTrace) -> list[str]:
 
 def _write_run_slideshow(run_dir: Path, trace: TransitionTrace, run_num: int) -> Path:
     slides: list[tuple[str, str]] = []
-    if trace.transitions and trace.transitions[0].before_screenshot:
-        before = trace.transitions[0].before_screenshot
-        assert before is not None
-        slides.append((before, "Before step 1"))
     for transition in trace.transitions:
         if transition.after_screenshot:
             after = transition.after_screenshot
             assert after is not None
             slides.append((after, f"After step {transition.step}"))
 
-    # Keep order but drop duplicates.
-    deduped: list[tuple[str, str]] = []
-    seen: set[str] = set()
-    for path, caption in slides:
-        if path in seen:
-            continue
-        seen.add(path)
-        deduped.append((path, caption))
-
     slide_items = "\n".join(
         f"<li><h3>{escape(caption)}</h3><img src=\"{escape(path)}\" alt=\"{escape(caption)}\"></li>"
-        for path, caption in deduped
+        for path, caption in slides
     )
     if not slide_items:
         slide_items = "<li><p>No screenshots were captured for this run.</p></li>"
@@ -88,7 +75,7 @@ def build_report(
     runs_requested: int,
     run_results: Sequence[tuple[int, str, bool, TransitionTrace | None, str | None]],
 ) -> tuple[Path, int, int, int]:
-    """Write ``report.html`` under ``session_dir`` and per-run slideshow pages."""
+    # Write report.html under session_dir and per-run slideshows.
     session_dir = Path(session_dir)
 
     all_issues: list[dict[str, object]] = []

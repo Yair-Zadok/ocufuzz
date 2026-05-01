@@ -1,4 +1,4 @@
-# Multi-run fuzzing: sequential agents, shared compact summaries, report.html.
+# Coordinate multi-run fuzzing sessions and write the final report.
 
 from __future__ import annotations
 
@@ -25,9 +25,8 @@ def _copy_if_exists(src: str | None, dst: Path) -> bool:
 
 
 def _bundle_trace_screenshots(run_dir: Path, trace: TransitionTrace) -> None:
-    """
-    Copy trace screenshots into ``run_dir/screenshots`` and rewrite paths to run-local refs.
-    """
+    # Keep screenshots with the run so reports can be opened after temp files disappear.
+    
     copied_by_source: dict[str, str] = {}
     sequence = 0
 
@@ -62,11 +61,8 @@ async def run_fuzzing(
     headless: bool | None = True,
     save_conversation: bool = False,
 ) -> tuple[Path, Path, int, int, int]:
-    """
-    Run ``runs`` sequential explorations.
+    # Run several explorations in sequence, feeding each run a compact memory of earlier ones.
 
-    Returns ``(session_dir, report_md_path, issue_count, successful_runs, runs_completed)``.
-    """
     if runs < 1:
         raise ValueError("runs must be >= 1")
 

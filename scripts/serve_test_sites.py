@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Serves ``test-sites`` on http://127.0.0.1:8765/ for local smoke runs.
+# Serve the bundled static demo sites for local ocufuzz smoke runs.
 
 from __future__ import annotations
 

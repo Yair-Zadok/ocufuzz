@@ -1,4 +1,4 @@
-# Outputs one exploration sequence to a caller-provided directory (browser-use).
+# Outputs one exploration sequence as a fresh browser-use agent.
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def resolve_llm(
     model: str | None = None,
     provider: str | None = None,
 ) -> tuple[BaseChatModel, str, str]:
-    """Pick the primary LLM. Defaults to local Ollama for credential-free runs."""
+    # Choose the model for a run, keeping local Ollama as the no-credentials default.
     chosen_provider = (provider or os.getenv("OCU_LLM_PROVIDER") or "ollama").lower()
     if chosen_provider == "ollama":
         chosen_model = model or os.getenv("OCU_OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
@@ -48,8 +48,8 @@ def resolve_llm(
     if chosen_provider == "google":
         if not os.getenv("GOOGLE_API_KEY"):
             raise RuntimeError("No Google credentials: set GOOGLE_API_KEY in the environment.")
-        chosen_model = model or os.getenv("OCU_GEMINI_MODEL", "gemini-3.1-flash-lite-preview")
-        return ChatGoogle(model=chosen_model, thinking_budget=0), chosen_model, chosen_provider
+        chosen_model = model or os.getenv("OCU_GEMINI_MODEL", "gemini-flash-lite-latest")
+        return ChatGoogle(model=chosen_model), chosen_model, chosen_provider
 
     raise RuntimeError(
         f"Unsupported LLM provider '{chosen_provider}'. Use 'ollama' or 'google'."
@@ -57,13 +57,13 @@ def resolve_llm(
 
 
 def resolve_fallback_llm(provider: str, primary_model: str) -> BaseChatModel | None:
-    """Pick fallback model for provider errors like quota/rate limits."""
+    # Use a second Google model when the primary one hits provider limits.
     if provider != "google":
         return None
-    fallback_model = os.getenv("OCU_FALLBACK_GEMINI_MODEL", "gemini-3.1-flash-preview")
+    fallback_model = os.getenv("OCU_FALLBACK_GEMINI_MODEL", "gemini-flash-latest")
     if fallback_model == primary_model:
         return None
-    return ChatGoogle(model=fallback_model, thinking_budget=0)
+    return ChatGoogle(model=fallback_model)
 
 
 DEFAULT_TASK = (
@@ -87,11 +87,10 @@ async def run_exploration(
     prior_summary: str | None = None,
 ) -> tuple[Path, TransitionTrace]:
     """
-    Run one `browser-use` agent session against ``start_url`` and write into ``artifacts_dir``.
+    Run one browser-use agent against ``start_url`` and collect the run output.
 
-    - ``run_history.json`` — serialized agent history
-    - ``transitions.json`` — ocufuzz transition trace
-    - ``conversation/`` — per-step conversation dumps when enabled
+    Each run writes the browser-use history, the ocufuzz transition trace, and
+    optional per-step conversation dumps into ``artifacts_dir``.
 
     Returns ``(artifacts_dir, trace)``.
     """
@@ -145,5 +144,6 @@ async def run_exploration(
         task=task_text,
         history=history,
     )
+    
     write_transitions(root / "transitions.json", trace)
     return root, trace
