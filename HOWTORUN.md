@@ -29,14 +29,14 @@ ollama serve
 In another terminal:
 
 ```powershell
-python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider ollama --max-steps 12
+python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider ollama --max-steps 10 --runs 6
 ```
 
 ## Run With Google
 
 ```powershell
 $env:GOOGLE_API_KEY = "<your key>"
-python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider google --max-steps 12
+python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider google --max-steps 10 --runs 6
 ```
 
 ## Environment Variables

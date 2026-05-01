@@ -29,6 +29,7 @@ img { max-width: 720px; width: 100%; height: auto; border: 1px solid #dce2ea; bo
 
 SLIDESHOW_CSS = """
 body { font: 16px/1.4 Arial, sans-serif; margin: 24px; }
+.back-link { display: inline-block; margin-bottom: 16px; color: #2456b3; font-weight: 700; text-decoration: none; }
 img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }
 li { margin-bottom: 18px; }
 """
@@ -70,7 +71,8 @@ def _write_run_slideshow(run_dir: Path, trace: TransitionTrace, run_num: int) ->
         for t in trace.transitions
         if t.after_screenshot
     ]
-    body = f"<h1>Run {run_num:02d} slideshow</h1><ul>{''.join(slides) or '<li><p>No screenshots were captured for this run.</p></li>'}</ul>"
+    slide_items = "".join(slides) or "<li><p>No screenshots were captured for this run.</p></li>"
+    body = f'<a class="back-link" href="../report.html">Back to report</a><h1>Run {run_num:02d} slideshow</h1><ul>{slide_items}</ul>'
     out_path = run_dir / "slideshow.html"
     out_path.write_text(_html_page(f"Run {run_num:02d} slideshow", body, SLIDESHOW_CSS), encoding="utf-8")
     return out_path

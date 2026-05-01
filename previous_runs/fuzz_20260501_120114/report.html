@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fuzzing report</title>
+  <style>
+body { margin: 0; background: #f6f7f9; color: #17202a; font: 16px/1.5 Inter, "Segoe UI", Arial, sans-serif; }
+main { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
+header, .run, .empty { background: white; border: 1px solid #dce2ea; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px #141f300c; }
+h1 { margin: 0 0 14px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; }
+h2 { margin: 0; font-size: 1.15rem; }
+.meta, .details, .empty { color: #647083; }
+.run, .empty { margin-top: 16px; }
+.run-heading, .links { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.status, .issue { background: #fff1f0; color: #9f241b; border-radius: 8px; }
+.status { border-radius: 999px; font-size: .82rem; font-weight: 700; padding: 4px 10px; }
+.issue { border-left: 3px solid #9f241b; padding: 10px 12px; margin-bottom: 12px; }
+.issue p { margin: 0 0 8px; }
+a { color: #2456b3; font-weight: 700; text-decoration: none; }
+img { max-width: 720px; width: 100%; height: auto; border: 1px solid #dce2ea; border-radius: 10px; margin-top: 10px; }
+</style>
+</head>
+<body><main><header><h1>2 failed / 2 runs</h1><div class="meta"><div><strong>Session:</strong> fuzz_20260501_120114</div><div><strong>Start URL:</strong> http://127.0.0.1:8765/site-obvious-issue/</div><div><strong>Completed runs:</strong> 2</div></div></header><section class="run"><div class="run-heading"><h2>Run 01</h2><span class="status">Failed</span></div><div class="issue"><p>The &#x27;Add to cart&#x27; button for &#x27;Focus Beans&#x27; (index 10) is non-functional; the cart does not update after interaction. The &#x27;Explorer Map&#x27; items are present, but &#x27;Focus Beans&#x27; cannot be added.</p></div><div class="details"><div><strong>URL:</strong> http://127.0.0.1:8765/site-obvious-issue/</div><div><strong>Action:</strong> {&quot;done&quot;:{&quot;text&quot;:&quot;I have identified a QA issue on the Northline Market website. The &#x27;Add to cart&#x27; button for &#x27;Focus Beans&#x27; (index 10) is non-functional. Despite clicking the button, the item does not appear in the cart, and the cart total remains unchanged. I have verified this behavior over two attempts. The &#x27;Explorer Map&#x27; items are already in the cart, suggesting the cart functionality itself works for some items, but the &#x27;Focus Beans&#x27; button is broken.&quot;,&quot;success&quot;:false,&quot;files_to_display&quot;:[]}}</div><div><img src="run_01/screenshots/shot_0003.png" alt="Run screenshot"></div></div><div class="links"><div><a href="run_01/slideshow.html">Open run slideshow</a></div></div></section><section class="run"><div class="run-heading"><h2>Run 02</h2><span class="status">Failed</span></div><div class="issue"><p>The &#x27;Add to cart&#x27; button for &#x27;Citrus Tonic&#x27; (index 11) is non-functional; the cart does not update. Moving on to test &#x27;Explorer Map&#x27;.</p></div><div class="details"><div><strong>URL:</strong> http://127.0.0.1:8765/site-obvious-issue/</div><div><strong>Action:</strong> {&quot;replace_file&quot;:{&quot;file_name&quot;:&quot;todo.md&quot;,&quot;old_str&quot;:&quot;- [ ] Test adding &#x27;Citrus Tonic&#x27; to cart&quot;,&quot;new_str&quot;:&quot;- [x] Test adding &#x27;Citrus Tonic&#x27; to cart&quot;}}; {&quot;click&quot;:{&quot;index&quot;:12}}</div><div><img src="run_02/screenshots/shot_0002.png" alt="Run screenshot"></div></div><div class="links"><div><a href="run_02/slideshow.html">Open run slideshow</a></div></div></section></main></body>
+</html>
