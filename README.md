@@ -4,6 +4,14 @@ It fuzzes a website with agentic agents running exploratory test sequences guide
 
 First, the agents explores and test the website -> reports any QA issues they find -> a summary report of all test sequences is generated.
 
+## Showcase
+
+<video src="ocufuzz-showcase.mp4" autoplay loop muted playsinline width="900">
+  Your browser does not support embedded videos.
+</video>
+
+[Download/view the showcase video](ocufuzz-showcase.mp4)
+
 The values of this project for Human/Agents are as follows:
 - Understandable, simple code which allows for human review of every line with mental ease.
 - Modular software design, i.e. standalone tools for agents to click on objects in the screen, DRY code, use helper functions to keep code clean, etc.
