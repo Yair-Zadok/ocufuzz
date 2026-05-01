@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pawfect Match</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg-1: #fff2f5;
+      --bg-2: #eef3ff;
+      --panel: #ffffffd9;
+      --ink: #1f2333;
+      --muted: #59617d;
+      --line: #e8dff6;
+      --accent: #ff5fa2;
+      --accent-2: #7567ff;
+      --ok: #1f9254;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(35rem 35rem at 10% 0%, #ffd4e8 0%, transparent 60%),
+        radial-gradient(40rem 40rem at 90% 100%, #d5dfff 0%, transparent 60%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+    }
+
+    main {
+      width: min(68rem, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 2.5rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 1.2rem;
+      align-items: stretch;
+      margin-bottom: 1.2rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--line);
+      border-radius: 1.25rem;
+      box-shadow: 0 20px 60px rgba(57, 44, 108, 0.14);
+      padding: 1rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 5vw, 3.9rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    p { color: var(--muted); }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #6b607f;
+      margin-right: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .chip::before {
+      content: "";
+      width: 0.42rem;
+      height: 0.42rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .spark-card {
+      background: linear-gradient(155deg, #fff, #ffeaf4);
+      border-radius: 1rem;
+      border: 1px solid #f6cde0;
+      padding: 1rem;
+    }
+
+    .spark-card h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 1.2rem;
+    }
+
+    label {
+      display: grid;
+      gap: 0.3rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      font-size: 0.92rem;
+    }
+
+    select, input, button {
+      font: inherit;
+    }
+
+    select, input {
+      border: 1px solid #ddd0f6;
+      border-radius: 0.75rem;
+      padding: 0.66rem 0.74rem;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.9rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 0.68rem 1rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .pass {
+      background: #ffffff;
+      border: 1px solid #e7dbff;
+      color: #56489f;
+    }
+
+    .like {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+    }
+
+    .deck {
+      display: grid;
+      place-items: center;
+      min-height: 31rem;
+      position: relative;
+    }
+
+    .dog-card {
+      width: min(24rem, 100%);
+      min-height: 29rem;
+      border-radius: 1.7rem;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #eadff8;
+      box-shadow: 0 28px 70px rgba(53, 41, 102, 0.18);
+      touch-action: none;
+      user-select: none;
+      transition: transform 180ms ease, opacity 180ms ease;
+    }
+
+    .dog-card.dragging {
+      transition: none;
+    }
+
+    .portrait {
+      min-height: 17rem;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 30% 20%, #ffffff 0 0.9rem, transparent 1rem),
+        linear-gradient(145deg, #ffe5f2, #e8ecff);
+      font-size: 7rem;
+    }
+
+    .card-body {
+      padding: 1rem;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.7rem;
+    }
+
+    .card-title h3 {
+      margin: 0;
+      font-size: 1.55rem;
+    }
+
+    .distance {
+      flex: none;
+      font-weight: 800;
+      color: #6a58b6;
+      background: #f0ebff;
+      border-radius: 999px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.85rem;
+    }
+
+    .meta {
+      color: var(--muted);
+      margin: 0.4rem 0 0.75rem;
+    }
+
+    .bio {
+      margin: 0;
+      color: #49506b;
+    }
+
+    .swipe-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .swipe-actions button {
+      min-width: 7rem;
+    }
+
+    .deck-note {
+      margin: 0.75rem 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .empty-card {
+      width: min(24rem, 100%);
+      border: 1px dashed #d8c9f5;
+      border-radius: 1.25rem;
+      padding: 2rem;
+      text-align: center;
+      background: #ffffffb8;
+    }
+
+    .status {
+      margin-top: 0.8rem;
+      border-radius: 0.8rem;
+      padding: 0.7rem 0.8rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    .status.show { display: block; }
+    .status.ok { background: #e8f8ef; color: var(--ok); }
+
+    @media (max-width: 840px) {
+      .hero, .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="panel">
+        <h1>Pawfect Match</h1>
+        <p>Swipe tails, not tales. Discover nearby dogs with matching play styles and make instant park-date connections.</p>
+        <span class="chip">Real-time Woof Score</span>
+        <span class="chip">Verified Humans</span>
+        <span class="chip">Neighborhood Packs</span>
+      </div>
+      <aside class="panel spark-card">
+        <h2>This week: Golden Hour Walks</h2>
+        <p>Premium members unlock sunset meetups and personalized park recommendations.</p>
+      </aside>
+    </section>
+
+    <section class="layout" aria-label="Dog matching demo">
+      <div class="panel">
+        <h2>Match preferences</h2>
+        <label>
+          Dog size
+          <select id="sizeFilter">
+            <option value="all">Any size</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </label>
+        <label>
+          Energy vibe
+          <select id="vibeFilter">
+            <option value="all">Any vibe</option>
+            <option value="calm">Calm</option>
+            <option value="playful">Playful</option>
+          </select>
+        </label>
+        <label>
+          Max distance
+          <select id="distanceFilter">
+            <option value="999">Any distance</option>
+            <option value="3">Within 3 miles</option>
+            <option value="8">Within 8 miles</option>
+            <option value="15">Within 15 miles</option>
+          </select>
+        </label>
+        <div id="status" class="status ok" role="status"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Swipe nearby pups</h2>
+        <div id="deck" class="deck" aria-live="polite"></div>
+        <div class="swipe-actions">
+          <button id="passBtn" class="pass" type="button">Pass</button>
+          <button id="likeBtn" class="like" type="button">Send Paw</button>
+        </div>
+        <p class="deck-note">Drag the card left to pass or right to send a paw.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    var dogs = [
+      { name: "Mochi", age: 2, size: "small", vibe: "playful", distance: 2, icon: "🐶", bio: "Tiny park comedian seeking fetch marathons and snack-sharing." },
+      { name: "Atlas", age: 5, size: "large", vibe: "calm", distance: 11, icon: "🐕", bio: "Gentle giant who prefers sunset walks and quiet cafe patios." },
+      { name: "Poppy", age: 3, size: "medium", vibe: "playful", distance: 6, icon: "🐕‍🦺", bio: "Agility-class star with a soft spot for splash pads." },
+      { name: "Basil", age: 4, size: "medium", vibe: "calm", distance: 14, icon: "🐾", bio: "Couch philosopher looking for low-key strolls and loyal friends." },
+      { name: "Juniper", age: 1, size: "small", vibe: "playful", distance: 4, icon: "🦴", bio: "Pocket-sized zoomie champion with excellent brunch manners." },
+      { name: "Ranger", age: 6, size: "large", vibe: "playful", distance: 8, icon: "🐕", bio: "Trail buddy who believes every puddle is a luxury spa." },
+      { name: "Noodle", age: 3, size: "small", vibe: "calm", distance: 13, icon: "🐶", bio: "Blanket connoisseur seeking gentle hellos and sunbeam naps." },
+      { name: "Clover", age: 2, size: "medium", vibe: "playful", distance: 5, icon: "🐾", bio: "Social butterfly who brings a tennis ball to every first date." },
+      { name: "Otis", age: 7, size: "large", vibe: "calm", distance: 16, icon: "🐕‍🦺", bio: "Distinguished nap expert with a soft spot for slow park loops." },
+      { name: "Pepper", age: 4, size: "small", vibe: "playful", distance: 9, icon: "🐶", bio: "Tiny detective investigating every squeaky toy in town." },
+      { name: "Maple", age: 5, size: "medium", vibe: "calm", distance: 7, icon: "🦮", bio: "Sweet cafe patio regular who loves polite sniffs and biscotti crumbs." },
+      { name: "Ziggy", age: 2, size: "large", vibe: "playful", distance: 12, icon: "🐕", bio: "Goofy athlete searching for tug-of-war rivals and big-yard energy." }
+    ];
+
+    var sizeFilter = document.getElementById("sizeFilter");
+    var vibeFilter = document.getElementById("vibeFilter");
+    var distanceFilter = document.getElementById("distanceFilter");
+    var deckEl = document.getElementById("deck");
+    var statusEl = document.getElementById("status");
+    var matches = [];
+    var currentIndex = 0;
+
+    function getMatches() {
+      var sizeValue = sizeFilter.value;
+      var vibeValue = vibeFilter.value;
+      var maxDistance = Number(distanceFilter.value);
+
+      return dogs.filter(function (dog) {
+        if (sizeValue !== "all" && dog.size !== sizeValue) {
+          return false;
+        }
+        if (vibeValue !== "all" && dog.vibe !== vibeValue) {
+          return false;
+        }
+        // Intentional subtle issue: maxDistance looks active in UI but is not applied.
+        return true;
+      });
+    }
+
+    function renderDeck() {
+      var dog = matches[currentIndex];
+
+      if (!dog) {
+        deckEl.innerHTML = "<div class=\"empty-card\"><h3>No more pups</h3><p>Adjust preferences or come back after the next park walk.</p></div>";
+        return;
+      }
+
+      deckEl.innerHTML = "<article id=\"activeCard\" class=\"dog-card\" tabindex=\"0\"><div class=\"portrait\" aria-hidden=\"true\">" + dog.icon + "</div><div class=\"card-body\"><div class=\"card-title\"><h3>" + dog.name + ", " + dog.age + "</h3><span class=\"distance\">" + dog.distance + " mi</span></div><p class=\"meta\">" + dog.size + " • " + dog.vibe + "</p><p class=\"bio\">" + dog.bio + "</p></div></article>";
+      attachSwipeHandlers(document.getElementById("activeCard"));
+    }
+
+    function resetDeck() {
+      matches = getMatches();
+      currentIndex = 0;
+      renderDeck();
+    }
+
+    function swipe(direction) {
+      var dog = matches[currentIndex];
+      if (!dog) {
+        return;
+      }
+
+      if (direction === "like") {
+        announce("Paw sent to " + dog.name + ". If they wag back, we will start a chat.");
+      } else {
+        announce("Passed on " + dog.name + ". Showing the next nearby pup.");
+      }
+
+      currentIndex += 1;
+      renderDeck();
+    }
+
+    function announce(message) {
+      statusEl.className = "status ok show";
+      statusEl.textContent = message;
+    }
+
+    function attachSwipeHandlers(card) {
+      var startX = 0;
+      var currentX = 0;
+      var dragging = false;
+
+      card.addEventListener("pointerdown", function (event) {
+        dragging = true;
+        startX = event.clientX;
+        currentX = 0;
+        card.classList.add("dragging");
+        card.setPointerCapture(event.pointerId);
+      });
+
+      card.addEventListener("pointermove", function (event) {
+        if (!dragging) {
+          return;
+        }
+
+        currentX = event.clientX - startX;
+        card.style.transform = "translateX(" + currentX + "px) rotate(" + (currentX / 18) + "deg)";
+      });
+
+      card.addEventListener("pointerup", function () {
+        dragging = false;
+        card.classList.remove("dragging");
+
+        if (currentX > 90) {
+          swipe("like");
+          return;
+        }
+        if (currentX < -90) {
+          swipe("pass");
+          return;
+        }
+
+        card.style.transform = "";
+      });
+    }
+
+    document.getElementById("likeBtn").addEventListener("click", function () {
+      swipe("like");
+    });
+
+    document.getElementById("passBtn").addEventListener("click", function () {
+      swipe("pass");
+    });
+
+    [sizeFilter, vibeFilter, distanceFilter].forEach(function (el) {
+      el.addEventListener("change", resetDeck);
+    });
+
+    resetDeck();
+  </script>
+</body>
+</html>

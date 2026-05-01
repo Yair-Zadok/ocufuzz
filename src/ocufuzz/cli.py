@@ -13,7 +13,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="ocufuzz: browser-use exploration fuzz runner")
     parser.add_argument(
         "url", 
-        help="Full URL to open (e.g. http://127.0.0.1:8765/site-1/)"
+        help="Full URL to open (e.g. http://127.0.0.1:8765/site-obvious-issue/)"
     )
     parser.add_argument(
         "--runs",

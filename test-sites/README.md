@@ -1,1 +1,2 @@
-This local site is for testing ocufuzz only. It is intentionally small, static, and includes a couple of obvious UI issues for exploratory runs to discover.
+These local sites are for testing ocufuzz only. They are intentionally small, static, and include a couple of obvious UI issues for exploratory runs to discover.
+They are AI-generated without human verification of their code.

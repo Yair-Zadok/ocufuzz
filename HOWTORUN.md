@@ -1,87 +1,86 @@
-# How to run ocufuzz
+# How To Run
 
-## Setup
+Requires Python 3.11+.
 
-```bash
+## Download And Install
+
+```powershell
+git clone <repo-url> ocufuzz
 cd ocufuzz
 python -m pip install -e .
-playwright install chromium
+python -m playwright install chromium
 ```
 
-Set:
+## Serve Demo Sites
 
-- Optional: `OCU_LLM_PROVIDER` (default: `ollama`; also supports `google`).
-- Optional: `OCU_OLLAMA_MODEL` (default: `qwen3.5:9b`).
-- Optional: `OCU_OLLAMA_BASE_URL` (default: `http://localhost:11434`).
-- Optional: `OCU_OLLAMA_MAX_TOKENS` (default: `2048`).
-- Optional: `OCU_OLLAMA_MAX_RETRIES` (default: `2`).
-- `GOOGLE_API_KEY` — required only when using `--provider google`.
-- Optional: `OCU_GEMINI_MODEL` (default: `gemini-3.1-flash-lite-preview`, for Google).
-- Optional: `OCU_FALLBACK_GEMINI_MODEL` (default: `gemini-3.1-flash-preview`, for Google).
-- Optional: `OCU_MAX_HISTORY_ITEMS` (default: `10`).
-- $env:GOOGLE_API_KEY = ""
+```powershell
+python scripts/serve_test_sites.py
+```
 
-The default runner uses local Ollama via LiteLLM with `qwen3.5:9b`.
-Make sure Ollama is running and the model is pulled:
+Use `http://127.0.0.1:8765/site-obvious-issue/` or `http://127.0.0.1:8765/site-obscure-issue/`.
+
+## Run With Ollama
 
 ```powershell
 ollama pull qwen3.5:9b
 ollama serve
 ```
 
-Gemini remains available with `--provider google`.
-
-## Local test site
-
-In one terminal:
-
-```bash
-python scripts/serve_test_sites.py
-```
-
-Opens:
-
-- `http://127.0.0.1:8765/site-1/`
-
-## Exploration / fuzzing run
-
-With the server running, in another terminal:
-
-```bash
-python -m ocufuzz "http://127.0.0.1:8765/site-1/" --max-steps 12
-```
-
-Each invocation creates a session folder `previous_runs/fuzz_<date_time>/` with `run_01/`, …, `report.html`. Use `--runs N` for N sequential agents (default `1`).
-
-
-Optional model override for one run:
+In another terminal:
 
 ```powershell
-python -m ocufuzz "http://127.0.0.1:8765/site-1/" --model qwen3.5:9b
+python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider ollama --max-steps 12
 ```
 
-Optional Gemini run:
+## Run With Google
 
 ```powershell
 $env:GOOGLE_API_KEY = "<your key>"
-python -m ocufuzz "http://127.0.0.1:8765/site-1/" --provider google --model gemini-3.1-flash-lite-preview
+python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider google --max-steps 12
 ```
 
-## CLI options
+## Environment Variables
 
-`python -m ocufuzz <url> [options]`
+- `OCU_LLM_PROVIDER`: default `ollama`; allowed `ollama`, `google`.
+- `OCU_OLLAMA_MODEL`: default `qwen3.5:9b`.
+- `OCU_OLLAMA_BASE_URL`: default `http://localhost:11434`.
+- `OCU_OLLAMA_MAX_TOKENS`: default `2048`.
+- `OCU_OLLAMA_MAX_RETRIES`: default `2`.
+- `OCU_GEMINI_MODEL`: default `gemini-flash-lite-latest`.
+- `OCU_FALLBACK_GEMINI_MODEL`: default `gemini-flash-latest`.
+- `OCU_MAX_HISTORY_ITEMS`: default `10`.
+- `GOOGLE_API_KEY`: required only for `--provider google`.
 
-- `url` (required positional): Full URL to open.
-- `--runs N`: Number of sequential exploration runs (default `1`).
-- `--task <text>`: Override the built-in exploration/QA instructions.
-- `--max-steps <int>`: Maximum number of agent steps per run (default `12`).
-- `--artifacts <path>`: Root directory for session outputs (default `previous_runs`).
-- `--headed`: Run with a visible browser window (default is headless).
-- `--save-conversation`: Save per-step conversation dumps for debugging (default off).
-- `--model <name>`: Override the model for this run only.
-- `--provider <ollama|google>`: Override the LLM provider for this run only.
+## CLI Help
 
-Artifacts are written under `previous_runs/fuzz_<date_time>/`:
+```text
+usage: __main__.py [-h] [--runs N] [--task TASK] [--max-steps MAX_STEPS]
+                   [--artifacts ARTIFACTS] [--headed] [--save-conversation]
+                   [--model MODEL] [--provider {ollama,google}]
+                   url
 
-- `run_01/`, `run_02/`, … — each contains `run_history.json`, `transitions.json`, `screenshots/`, and `slideshow.html` (when trace exists)
-- `report.html` — simple failure-oriented session summary (`failed / runs`) with links to failed run slideshows
+ocufuzz: browser-use exploration fuzz runner
+
+positional arguments:
+  url                   Full URL to open (e.g. http://127.0.0.1:8765/site-
+                        obvious-issue/)
+
+options:
+  -h, --help            show this help message and exit
+  --runs N              Number of sequential exploration sequences (default:
+                        1).
+  --task TASK           Override exploration instructions (default uses built-
+                        in QA prompt).
+  --max-steps MAX_STEPS
+                        Maximum agent steps per run.
+  --artifacts ARTIFACTS
+                        Root directory; each invocation creates a
+                        fuzz_<date_time> session folder here.
+  --headed              Run browser headed (default headless).
+  --save-conversation   Persist per-step conversation dumps under the run
+                        folder for debugging.
+  --model MODEL         Override model for this run (default: qwen3.5:9b for
+                        Ollama).
+  --provider {ollama,google}
+                        LLM provider to use (default: ollama).
+```
