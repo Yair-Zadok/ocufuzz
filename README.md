@@ -8,6 +8,15 @@ https://github.com/user-attachments/assets/e8862b9e-6d3d-4f73-b10b-ab6ae412a492
 
 See [HOWTORUN.md](HOWTORUN.md) for setup.
 
+## Sample Reports
+
+See [sample_runs](sample_runs) for example fuzzing reports. PDF versions of the reports are listed there for easy viewing on GitHub.
+
+- In the [obvious issue site report](sample_runs/obvious-issue-site/report_converted_from_HTML.pdf), agents report many issues, including incorrect items being added to the shopping cart.
+- In the [obscure issue site report](sample_runs/obscure-issue-site/report.html), agents find that the distance filter does not apply to the candidate dogs.
+
+These are examples of semantic errors that agents are uniquely capable of finding.
+
 AI notice:
 AI agents have and are used to build this project
 
