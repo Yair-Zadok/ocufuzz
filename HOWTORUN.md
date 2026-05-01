@@ -41,15 +41,10 @@ python -m ocufuzz "http://127.0.0.1:8765/site-obvious-issue/" --provider google 
 
 ## Environment Variables
 
-- `OCU_LLM_PROVIDER`: default `ollama`; allowed `ollama`, `google`.
-- `OCU_OLLAMA_MODEL`: default `qwen3.5:9b`.
-- `OCU_OLLAMA_BASE_URL`: default `http://localhost:11434`.
-- `OCU_OLLAMA_MAX_TOKENS`: default `2048`.
-- `OCU_OLLAMA_MAX_RETRIES`: default `2`.
-- `OCU_GEMINI_MODEL`: default `gemini-flash-lite-latest`.
-- `OCU_FALLBACK_GEMINI_MODEL`: default `gemini-flash-latest`.
-- `OCU_MAX_HISTORY_ITEMS`: default `10`.
 - `GOOGLE_API_KEY`: required only for `--provider google`.
+- `OCU_OLLAMA_BASE_URL`: default `http://localhost:11434`.
+
+Use CLI flags like `--provider` and `--model` for per-run choices.
 
 ## CLI Help
 

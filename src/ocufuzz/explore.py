@@ -15,6 +15,11 @@ from ocufuzz.trace import TransitionTrace
 
 DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434"
+DEFAULT_GOOGLE_MODEL = "gemini-flash-lite-latest"
+FALLBACK_GOOGLE_MODEL = "gemini-flash-latest"
+DEFAULT_OLLAMA_MAX_TOKENS = 2048
+DEFAULT_OLLAMA_MAX_RETRIES = 2
+DEFAULT_MAX_HISTORY_ITEMS = 10
 MAXIMIZED_VIEW_SIZE = {"width": 1920, "height": 1080}
 DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 240
 
@@ -32,16 +37,16 @@ def resolve_llm(
     provider: str | None = None,
 ) -> tuple[BaseChatModel, str, str]:
     # Choose the model for a run, keeping local Ollama as the no-credentials default.
-    chosen_provider = (provider or os.getenv("OCU_LLM_PROVIDER") or "ollama").lower()
+    chosen_provider = (provider or "ollama").lower()
     if chosen_provider == "ollama":
-        chosen_model = model or os.getenv("OCU_OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
+        chosen_model = model or DEFAULT_OLLAMA_MODEL
         base_url = os.getenv("OCU_OLLAMA_BASE_URL", DEFAULT_OLLAMA_BASE_URL)
         return (
             ChatLiteLLM(
                 model=_ollama_model_name(chosen_model),
                 api_base=base_url,
-                max_tokens=int(os.getenv("OCU_OLLAMA_MAX_TOKENS", "2048")),
-                max_retries=int(os.getenv("OCU_OLLAMA_MAX_RETRIES", "2")),
+                max_tokens=DEFAULT_OLLAMA_MAX_TOKENS,
+                max_retries=DEFAULT_OLLAMA_MAX_RETRIES,
             ),
             chosen_model,
             chosen_provider,
@@ -50,7 +55,7 @@ def resolve_llm(
     if chosen_provider == "google":
         if not os.getenv("GOOGLE_API_KEY"):
             raise RuntimeError("No Google credentials: set GOOGLE_API_KEY in the environment.")
-        chosen_model = model or os.getenv("OCU_GEMINI_MODEL", "gemini-flash-lite-latest")
+        chosen_model = model or DEFAULT_GOOGLE_MODEL
         return ChatGoogle(model=chosen_model), chosen_model, chosen_provider
 
     raise RuntimeError(
@@ -63,10 +68,9 @@ def resolve_fallback_llm(provider: str, primary_model: str) -> BaseChatModel | N
     # Use a second Google model when the primary one hits provider limits.
     if provider != "google":
         return None
-    fallback_model = os.getenv("OCU_FALLBACK_GEMINI_MODEL", "gemini-flash-latest")
-    if fallback_model == primary_model:
+    if FALLBACK_GOOGLE_MODEL == primary_model:
         return None
-    return ChatGoogle(model=fallback_model)
+    return ChatGoogle(model=FALLBACK_GOOGLE_MODEL)
 
 
 DEFAULT_TASK = (
@@ -132,7 +136,7 @@ async def run_exploration(
         llm_timeout=DEFAULT_AGENT_LLM_TIMEOUT_SECONDS,
         flash_mode=False,
         use_thinking=True,
-        max_history_items=int(os.getenv("OCU_MAX_HISTORY_ITEMS", "10")),
+        max_history_items=DEFAULT_MAX_HISTORY_ITEMS,
         browser=browser,
         fallback_llm=fallback_llm,
         save_conversation_path=str(conv_dir) if save_conversation else None,
@@ -148,6 +152,6 @@ async def run_exploration(
         task=task_text,
         history=history,
     )
-    
+
     write_transitions(root / "transitions.json", trace)
     return root, trace

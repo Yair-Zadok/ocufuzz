@@ -1,10 +1,12 @@
 This is ocufuzz, an agentic fuzzer for frontend QA. 
 
-First, it explores the website -> ideates and excecutes test sequences -> evaluates every step of the execution for bugs or anomomalities -> reports results of all test sequences.
+It fuzzes a website with agentic agents running exploratory test sequences guided by summaries of previous runs. 
+
+First, the agents explores and test the website -> reports any QA issues they find -> a summary report of all test sequences is generated.
 
 The values of this project for Human/Agents are as follows:
 - Understandable, simple code which allows for human review of every line with mental ease.
-- Modular software design, i.e. standalone tools for agents to click on objects in the screen, etc.
+- Modular software design, i.e. standalone tools for agents to click on objects in the screen, DRY code, use helper functions to keep code clean, etc.
 - Use existing libraries / codebases for tools or other needed functions where possible.
 - Minimize lines of code within reason by using frameworks/libraries to where it makes sense.
 - ALWAYS maintain a HOWTORUN.md which is constantly updated with SHORT instructions on how to run the project.
