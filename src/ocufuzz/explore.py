@@ -20,7 +20,6 @@ FALLBACK_GOOGLE_MODEL = "gemini-flash-latest"
 DEFAULT_OLLAMA_MAX_TOKENS = 2048
 DEFAULT_OLLAMA_MAX_RETRIES = 2
 DEFAULT_MAX_HISTORY_ITEMS = 10
-MAXIMIZED_VIEW_SIZE = {"width": 1920, "height": 1080}
 DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 240
 
 
@@ -75,7 +74,7 @@ def resolve_fallback_llm(provider: str, primary_model: str) -> BaseChatModel | N
 
 DEFAULT_TASK = (
     "You are a QA agent, you are testing a website for QA issues. Explore visible controls and form flows with short, targeted actions. "
-    "Keep memory to one short sentence. Include 'QA: ...' in memory only when behavior appears incorrect or unintended "
+    "Include 'QA: ...' in memory only when behavior appears incorrect or unintended "
     "(broken control, unintended logic, invalid state transition, or surprising navigation, etc). "
     "Do not include a QA note when no issue is observed."
 )
@@ -121,15 +120,7 @@ async def run_exploration(
         )
         full_task = f"{full_task}\n\n{prior_block}"
 
-    browser_options: dict[str, object] = {
-        "headless": headless,
-        "args": ["--start-maximized"],
-        "screen": MAXIMIZED_VIEW_SIZE,
-        "viewport": MAXIMIZED_VIEW_SIZE,
-        "window_size": MAXIMIZED_VIEW_SIZE,
-    }
-
-    browser = Browser(**browser_options)
+    browser = Browser(headless=headless, args=["--start-maximized"])
     agent = Agent(
         task=full_task,
         llm=llm,
