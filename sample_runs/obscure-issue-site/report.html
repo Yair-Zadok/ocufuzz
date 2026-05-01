@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fuzzing report</title>
+  <style>
+body { margin: 0; background: #f6f7f9; color: #17202a; font: 16px/1.5 Inter, "Segoe UI", Arial, sans-serif; }
+main { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
+header, .run, .empty { background: white; border: 1px solid #dce2ea; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px #141f300c; }
+h1 { margin: 0 0 14px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; }
+h2 { margin: 0; font-size: 1.15rem; }
+.meta, .details, .empty { color: #647083; }
+.run, .empty { margin-top: 16px; }
+.run-heading, .links { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.status, .issue { background: #fff1f0; color: #9f241b; border-radius: 8px; }
+.status { border-radius: 999px; font-size: .82rem; font-weight: 700; padding: 4px 10px; }
+.issue { border-left: 3px solid #9f241b; padding: 10px 12px; margin-bottom: 12px; }
+.issue p { margin: 0 0 8px; }
+a { color: #2456b3; font-weight: 700; text-decoration: none; }
+img { max-width: 720px; width: 100%; height: auto; border: 1px solid #dce2ea; border-radius: 10px; margin-top: 10px; }
+</style>
+</head>
+<body><main><header><h1>3 failed / 8 runs</h1><div class="meta"><div><strong>Session:</strong> fuzz_20260501_165257</div><div><strong>Start URL:</strong> http://127.0.0.1:8765/site-obscure-issue/</div><div><strong>Completed runs:</strong> 8</div></div></header><section class="run"><div class="run-heading"><h2>Run 01</h2><span class="status">Failed</span></div><div class="issue"><p>The &#x27;Max distance&#x27; filter set to &#x27;Within 3 miles&#x27; did not update the card, which still displays &#x27;13 mi&#x27;. This suggests the filter functionality might be broken or not applying correctly to the current card. Proceeding to test &#x27;Pass&#x27; button.</p></div><div class="details"><div><strong>URL:</strong> http://127.0.0.1:8765/site-obscure-issue/</div><div><strong>Action:</strong> {&quot;replace_file&quot;:{&quot;file_name&quot;:&quot;todo.md&quot;,&quot;old_str&quot;:&quot;- [ ] Test &#x27;Max distance&#x27; filter functionality&quot;,&quot;new_str&quot;:&quot;- [x] Test &#x27;Max distance&#x27; filter functionality&quot;}}; {&quot;click&quot;:{&quot;index&quot;:12}}</div><div><img src="run_01/screenshots/shot_0005.png" alt="Run screenshot"></div></div><div class="links"><div><a href="run_01/slideshow.html">Open run slideshow</a></div></div></section><section class="run"><div class="run-heading"><h2>Run 04</h2><span class="status">Failed</span></div><div class="issue"><p>The &#x27;Max distance&#x27; filter is set to &#x27;Within 8 miles&#x27;, but the displayed card shows &#x27;11 mi&#x27;, which is outside the selected range. This indicates a potential bug in the filtering logic. Now testing &#x27;Energy vibe&#x27; filter by selecting &#x27;Calm&#x27;.</p><p>The &#x27;Max distance&#x27; filter (set to &#x27;Within 8 miles&#x27;) is being ignored as the current card shows &#x27;11 mi&#x27;. The &#x27;Dog size&#x27; and &#x27;Energy vibe&#x27; filters seem to be working. Moving on to testing &#x27;Pass&#x27; and &#x27;Send Paw&#x27; interactions.</p></div><div class="details"><div><strong>URL:</strong> http://127.0.0.1:8765/site-obscure-issue/</div><div><strong>Action:</strong> {&quot;select_dropdown&quot;:{&quot;index&quot;:3,&quot;text&quot;:&quot;Calm&quot;}}</div><div><img src="run_04/screenshots/shot_0005.png" alt="Run screenshot"></div></div><div class="links"><div><a href="run_04/slideshow.html">Open run slideshow</a></div></div></section><section class="run"><div class="run-heading"><h2>Run 06</h2><span class="status">Failed</span></div><div class="issue"><p>The &#x27;Max distance&#x27; filter is set to &#x27;Within 8 miles&#x27;, but the displayed card shows &#x27;11 mi&#x27;, which is outside the selected range. This indicates a potential bug in the filter logic. Proceeding to test &#x27;Dog size&#x27; filter.</p></div><div class="details"><div><strong>URL:</strong> http://127.0.0.1:8765/site-obscure-issue/</div><div><strong>Action:</strong> {&quot;select_dropdown&quot;:{&quot;index&quot;:2,&quot;text&quot;:&quot;Small&quot;}}</div><div><img src="run_06/screenshots/shot_0005.png" alt="Run screenshot"></div></div><div class="links"><div><a href="run_06/slideshow.html">Open run slideshow</a></div></div></section></main></body>
+</html>
