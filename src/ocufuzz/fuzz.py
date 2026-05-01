@@ -13,6 +13,7 @@ from ocufuzz.summarize import build_prior_summary, summarize_run
 from ocufuzz.trace import TransitionTrace
 
 
+# Copy a file when the source path is valid.
 def _copy_if_exists(src: str | None, dst: Path) -> bool:
     if not src:
         return False
@@ -24,31 +25,30 @@ def _copy_if_exists(src: str | None, dst: Path) -> bool:
     return True
 
 
-def _bundle_trace_screenshots(run_dir: Path, trace: TransitionTrace) -> None:
-    # Keep screenshots with the run so reports can be opened after temp files disappear.
-    
+# Copy trace screenshots into a run folder.
+def _bundle_trace_screenshots(run_dir: Path, trace: TransitionTrace) -> None:    
     copied_by_source: dict[str, str] = {}
     sequence = 0
 
     for transition in trace.transitions:
-        for attr in ("before_screenshot", "after_screenshot"):
-            source = getattr(transition, attr)
-            if not source:
-                continue
-            if source in copied_by_source:
-                setattr(transition, attr, copied_by_source[source])
-                continue
+        source = transition.after_screenshot
+        if not source:
+            continue
+        if source in copied_by_source:
+            transition.after_screenshot = copied_by_source[source]
+            continue
 
-            sequence += 1
-            ext = Path(source).suffix or ".png"
-            target_name = f"shot_{sequence:04d}{ext}"
-            target_rel = f"screenshots/{target_name}"
-            target_abs = run_dir / target_rel
-            if _copy_if_exists(source, target_abs):
-                copied_by_source[source] = target_rel
-                setattr(transition, attr, target_rel)
+        sequence += 1
+        ext = Path(source).suffix or ".png"
+        target_name = f"shot_{sequence:04d}{ext}"
+        target_rel = f"screenshots/{target_name}"
+        target_abs = run_dir / target_rel
+        if _copy_if_exists(source, target_abs):
+            copied_by_source[source] = target_rel
+            transition.after_screenshot = target_rel
 
 
+# Run a full multi-run fuzzing session.
 async def run_fuzzing(
     start_url: str,
     *,

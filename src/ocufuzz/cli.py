@@ -5,11 +5,16 @@ from __future__ import annotations
 import argparse
 import asyncio
 import sys
+from ocufuzz.fuzz import run_fuzzing
 
 
+# Parse CLI arguments and launch a fuzzing session.
 def main() -> None:
     parser = argparse.ArgumentParser(description="ocufuzz: browser-use exploration fuzz runner")
-    parser.add_argument("url", help="Full URL to open (e.g. http://127.0.0.1:8765/site-1/)")
+    parser.add_argument(
+        "url", 
+        help="Full URL to open (e.g. http://127.0.0.1:8765/site-1/)"
+    )
     parser.add_argument(
         "--runs",
         type=int,
@@ -47,13 +52,11 @@ def main() -> None:
         "--provider",
         choices=["ollama", "google"],
         default=None,
-        help="LLM provider to use (default: OCU_LLM_PROVIDER or ollama).",
+        help="LLM provider to use (default: ollama).",
     )
     args = parser.parse_args()
 
     async def _go():
-        from ocufuzz.fuzz import run_fuzzing
-
         session_dir, report_path, issue_count, successful, _ = await run_fuzzing(
             args.url,
             runs=args.runs,

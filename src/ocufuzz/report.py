@@ -8,310 +8,119 @@ from pathlib import Path
 
 from ocufuzz.trace import TransitionTrace
 
+RunResult = tuple[int, str, bool, TransitionTrace | None, str | None]
 
+REPORT_CSS = """
+body { margin: 0; background: #f6f7f9; color: #17202a; font: 16px/1.5 Inter, "Segoe UI", Arial, sans-serif; }
+main { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
+header, .run, .empty { background: white; border: 1px solid #dce2ea; border-radius: 14px; padding: 18px; box-shadow: 0 10px 25px #141f300c; }
+h1 { margin: 0 0 14px; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -.04em; }
+h2 { margin: 0; font-size: 1.15rem; }
+.meta, .details, .empty { color: #647083; }
+.run, .empty { margin-top: 16px; }
+.run-heading, .links { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.status, .issue { background: #fff1f0; color: #9f241b; border-radius: 8px; }
+.status { border-radius: 999px; font-size: .82rem; font-weight: 700; padding: 4px 10px; }
+.issue { border-left: 3px solid #9f241b; padding: 10px 12px; margin-bottom: 12px; }
+.issue p { margin: 0 0 8px; }
+a { color: #2456b3; font-weight: 700; text-decoration: none; }
+img { max-width: 720px; width: 100%; height: auto; border: 1px solid #dce2ea; border-radius: 10px; margin-top: 10px; }
+"""
+
+SLIDESHOW_CSS = """
+body { font: 16px/1.4 Arial, sans-serif; margin: 24px; }
+img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }
+li { margin-bottom: 18px; }
+"""
+
+
+# Format a run number as its artifact folder name.
 def _run_label(run_num: int) -> str:
     return f"run_{run_num:02d}"
 
 
-def _report_shot_path(run_num: int, run_relative_path: str | None) -> str | None:
-    if not run_relative_path:
-        return None
-    return f"{_run_label(run_num)}/{run_relative_path}"
-
-
-def _collect_issue_lines(trace: TransitionTrace) -> list[str]:
-    lines: list[str] = []
-    for transition in trace.transitions:
-        if transition.qa_observation:
-            text = transition.qa_observation.strip()
-            if text and text not in lines:
-                lines.append(text)
-    return lines
-
-
-def _write_run_slideshow(run_dir: Path, trace: TransitionTrace, run_num: int) -> Path:
-    slides: list[tuple[str, str]] = []
-    for transition in trace.transitions:
-        if transition.after_screenshot:
-            after = transition.after_screenshot
-            assert after is not None
-            slides.append((after, f"After step {transition.step}"))
-
-    slide_items = "\n".join(
-        f"<li><h3>{escape(caption)}</h3><img src=\"{escape(path)}\" alt=\"{escape(caption)}\"></li>"
-        for path, caption in slides
-    )
-    if not slide_items:
-        slide_items = "<li><p>No screenshots were captured for this run.</p></li>"
-
-    html = f"""<!doctype html>
+# Wrap body HTML in a complete styled document.
+def _html_page(title: str, body: str, css: str = REPORT_CSS) -> str:
+    return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Run {run_num:02d} slideshow</title>
-  <style>
-    body {{ font-family: Arial, sans-serif; margin: 24px; line-height: 1.4; }}
-    img {{ max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }}
-    ul {{ padding-left: 20px; }}
-    li {{ margin-bottom: 18px; }}
-  </style>
+  <title>{escape(title)}</title>
+  <style>{css}</style>
 </head>
-<body>
-  <h1>Run {run_num:02d} slideshow</h1>
-  <ul>{slide_items}</ul>
-</body>
-</html>
-"""
+<body>{body}</body>
+</html>"""
+
+
+# Collect distinct QA notes from a run trace.
+def _unique_issue_notes(trace: TransitionTrace) -> list[str]:
+    notes: list[str] = []
+    for transition in trace.transitions:
+        note = (transition.qa_observation or "").strip()
+        if note and note not in notes:
+            notes.append(note)
+    return notes
+
+
+# Write a screenshot slideshow for one run.
+def _write_run_slideshow(run_dir: Path, trace: TransitionTrace, run_num: int) -> Path:
+    slides = [
+        f'<li><h3>{escape(f"After step {t.step}")}</h3><img src="{escape(t.after_screenshot)}" alt="{escape(f"After step {t.step}")}"></li>'
+        for t in trace.transitions
+        if t.after_screenshot
+    ]
+    body = f"<h1>Run {run_num:02d} slideshow</h1><ul>{''.join(slides) or '<li><p>No screenshots were captured for this run.</p></li>'}</ul>"
     out_path = run_dir / "slideshow.html"
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(_html_page(f"Run {run_num:02d} slideshow", body, SLIDESHOW_CSS), encoding="utf-8")
     return out_path
 
 
+# Render one failed run's report card.
+def _failed_run_card(session_dir: Path, result: RunResult) -> str:
+    run_num, status, _has_issue, trace, error_text = result
+    label = _run_label(run_num)
+    notes = [error_text or "Run errored before trace was available."] if status != "completed" else []
+    notes += _unique_issue_notes(trace) if trace else []
+    notes = notes or ["Run marked failed with no additional error text."]
+    details = links = ""
+
+    if trace:
+        _write_run_slideshow(session_dir / label, trace, run_num)
+        first_issue = next((t for t in trace.transitions if t.qa_observation), None)
+        if first_issue:
+            screenshot = f'{label}/{first_issue.after_screenshot}' if first_issue.after_screenshot else ""
+            image = f'<div><img src="{escape(screenshot)}" alt="Run screenshot"></div>' if screenshot else ""
+            details = f"<div><strong>URL:</strong> {escape(first_issue.url_after or '')}</div><div><strong>Action:</strong> {escape(first_issue.action_summary)}</div>{image}"
+        links = f'<div><a href="{label}/slideshow.html">Open run slideshow</a></div>'
+
+    issue_html = "".join(f"<p>{escape(note)}</p>" for note in notes)
+    return f'<section class="run"><div class="run-heading"><h2>Run {run_num:02d}</h2><span class="status">Failed</span></div><div class="issue">{issue_html}</div><div class="details">{details}</div><div class="links">{links}</div></section>'
+
+
+# Build the session report and return summary metrics.
 def build_report(
     session_dir: Path,
     *,
     start_url: str,
     runs_requested: int,
-    run_results: Sequence[tuple[int, str, bool, TransitionTrace | None, str | None]],
+    run_results: Sequence[RunResult],
 ) -> tuple[Path, int, int, int]:
     # Write report.html under session_dir and per-run slideshows.
     session_dir = Path(session_dir)
-
-    all_issues: list[dict[str, object]] = []
-    for run_num, status, _has_issue, trace, _error_text in run_results:
-        if trace is None:
-            continue
-        for t in trace.transitions:
-            if not t.qa_observation:
-                continue
-            all_issues.append(
-                {
-                    "run": run_num,
-                    "step": t.step,
-                    "url": t.url_after or "",
-                    "severity": t.qa_severity or "",
-                    "observation": t.qa_observation,
-                    "action_summary": t.action_summary,
-                    "screenshot": t.after_screenshot or "",
-                }
-            )
-
-    successful_runs = 0
-    for _run_num, status, _has_issue, trace, _error_text in run_results:
-        if status != "completed" or trace is None:
-            continue
-        if not any(t.qa_observation for t in trace.transitions):
-            successful_runs += 1
-
-    runs_completed = sum(1 for _, st, _, _, _ in run_results if st == "completed")
-    failed_entries: list[str] = []
-    failed_count = 0
-
-    for run_num, status, has_issue, trace, error_text in run_results:
-        run_failed = status != "completed" or has_issue
-        if not run_failed:
-            continue
-        failed_count += 1
-        run_dir = session_dir / _run_label(run_num)
-
-        issue_lines: list[str] = []
-        if status != "completed":
-            issue_lines.append(error_text or "Run errored before trace was available.")
-        elif trace is not None:
-            issue_lines.extend(_collect_issue_lines(trace))
-        if not issue_lines:
-            issue_lines.append("Run marked failed with no additional error text.")
-
-        slideshow_link = ""
-        transitions_link = ""
-        meta_block = ""
-        if trace is not None:
-            _write_run_slideshow(run_dir, trace, run_num)
-            transitions_link = (
-                f'<div><a href="{escape(f"{_run_label(run_num)}/transitions.json")}">Open transitions.json</a></div>'
-            )
-            slideshow_link = (
-                f'<div><a href="{escape(f"{_run_label(run_num)}/slideshow.html")}">Open run slideshow</a></div>'
-            )
-            first_issue = next((t for t in trace.transitions if t.qa_observation), None)
-            if first_issue:
-                screenshot = _report_shot_path(run_num, first_issue.after_screenshot)
-                shot_html = (
-                    f'<div><img src="{escape(screenshot)}" alt="Run screenshot"></div>'
-                    if screenshot
-                    else ""
-                )
-                meta_block = (
-                    f"<div><strong>URL:</strong> {escape(first_issue.url_after or '')}</div>"
-                    f"<div><strong>Action:</strong> {escape(first_issue.action_summary)}</div>"
-                    f"{shot_html}"
-                )
-
-        issue_html = "".join(f"<p>{escape(text)}</p>" for text in issue_lines)
-        failed_entries.append(
-            f"""
-<section class="run">
-  <div class="run-heading">
-    <h2>Run {run_num:02d}</h2>
-    <span class="status">Failed</span>
-  </div>
-  <div class="issue">{issue_html}</div>
-  <div class="details">{meta_block}</div>
-  <div class="links">
-    {slideshow_link}
-    {transitions_link}
-  </div>
-</section>
-"""
-        )
-
-    failed_html = (
-        "\n".join(failed_entries)
-        if failed_entries
-        else '<p class="empty">No failed runs.</p>'
+    failed = [r for r in run_results if r[1] != "completed" or r[2]]
+    issue_count = sum(
+        1 for *_prefix, trace, _error in run_results if trace for t in trace.transitions if t.qa_observation
     )
-    html = f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Fuzzing report</title>
-  <style>
-    :root {{
-      color-scheme: light;
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --ink: #17202a;
-      --muted: #647083;
-      --line: #dce2ea;
-      --bad-bg: #fff1f0;
-      --bad-ink: #9f241b;
-      --link: #2456b3;
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: Inter, "Segoe UI", Arial, sans-serif;
-      line-height: 1.5;
-    }}
-    main {{
-      width: min(920px, calc(100% - 32px));
-      margin: 40px auto;
-    }}
-    header {{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 22px;
-      box-shadow: 0 14px 35px rgba(20, 31, 48, 0.06);
-    }}
-    h1 {{
-      margin: 0 0 14px;
-      font-size: clamp(2rem, 4vw, 3rem);
-      letter-spacing: -0.04em;
-    }}
-    h2 {{
-      margin: 0;
-      font-size: 1.15rem;
-    }}
-    .meta {{
-      display: grid;
-      gap: 4px;
-      color: var(--muted);
-      font-size: 0.95rem;
-    }}
-    .run {{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      margin-top: 16px;
-      padding: 18px;
-      box-shadow: 0 10px 25px rgba(20, 31, 48, 0.045);
-    }}
-    .run-heading {{
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 12px;
-    }}
-    .status {{
-      border-radius: 999px;
-      background: var(--bad-bg);
-      color: var(--bad-ink);
-      font-size: 0.82rem;
-      font-weight: 700;
-      padding: 4px 10px;
-    }}
-    .issue {{
-      border-left: 3px solid var(--bad-ink);
-      background: var(--bad-bg);
-      color: var(--bad-ink);
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 12px;
-    }}
-    .issue p {{
-      margin: 0 0 8px;
-    }}
-    .issue p:last-child {{
-      margin-bottom: 0;
-    }}
-    .details {{
-      color: var(--muted);
-      font-size: 0.95rem;
-    }}
-    .links {{
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 12px;
-    }}
-    a {{
-      color: var(--link);
-      font-weight: 700;
-      text-decoration: none;
-    }}
-    a:hover {{
-      text-decoration: underline;
-    }}
-    img {{
-      max-width: 720px;
-      width: 100%;
-      height: auto;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      margin-top: 10px;
-    }}
-    .empty {{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      color: var(--muted);
-      margin-top: 16px;
-      padding: 18px;
-    }}
-  </style>
-</head>
-<body>
-  <main>
-    <header>
-      <h1>{failed_count} failed / {runs_requested} runs</h1>
-      <div class="meta">
-        <div><strong>Session:</strong> {escape(session_dir.name)}</div>
-        <div><strong>Start URL:</strong> {escape(start_url)}</div>
-        <div><strong>Completed runs:</strong> {runs_completed}</div>
-      </div>
-    </header>
-    {failed_html}
-  </main>
-</body>
-</html>
-"""
+    successful_runs = sum(
+        1
+        for _n, status, _issue, trace, _error in run_results
+        if status == "completed" and trace and not any(t.qa_observation for t in trace.transitions)
+    )
+    runs_completed = sum(1 for _n, status, _issue, _trace, _error in run_results if status == "completed")
+    failed_html = "".join(_failed_run_card(session_dir, result) for result in failed) or '<p class="empty">No failed runs.</p>'
+    body = f'<main><header><h1>{len(failed)} failed / {runs_requested} runs</h1><div class="meta"><div><strong>Session:</strong> {escape(session_dir.name)}</div><div><strong>Start URL:</strong> {escape(start_url)}</div><div><strong>Completed runs:</strong> {runs_completed}</div></div></header>{failed_html}</main>'
 
     report_path = session_dir / "report.html"
-    report_path.write_text(html, encoding="utf-8")
-    return report_path, len(all_issues), successful_runs, runs_completed
+    report_path.write_text(_html_page("Fuzzing report", body), encoding="utf-8")
+    return report_path, issue_count, successful_runs, runs_completed

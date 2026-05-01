@@ -13,12 +13,14 @@ from browser_use.agent.views import AgentHistoryList
 from ocufuzz.trace import Transition, TransitionTrace
 
 
+# Build a stable state id from page identity. # Good for later use in graph generation (to be implemented).
 def _state_id(url: str | None, title: str | None) -> str:
     key = f"{url or ''}|{title or ''}"
     h = hashlib.sha256(key.encode("utf-8")).hexdigest()[:12]
     return f"s_{h}"
 
 
+# Summarize browser-use actions for reports.
 def _action_summary(actions: list[Any]) -> str:
     parts: list[str] = []
     for a in actions:
@@ -29,6 +31,7 @@ def _action_summary(actions: list[Any]) -> str:
     return "; ".join(parts) if parts else "(no actions)"
 
 
+# Return the first error found in step results.
 def _step_error(results: list[Any]) -> str | None:
     for result in results:
         error = getattr(result, "error", None)
@@ -37,7 +40,8 @@ def _step_error(results: list[Any]) -> str | None:
     return None
 
 
-def _extract_qa_note(text: str | None) -> str | None:
+# Return only the QA issue text after "QA:".
+def _qa_issue_text(text: str | None) -> str | None:
     if not text:
         return None
     match = re.search(r"QA:\s*(.+)", text, flags=re.IGNORECASE)
@@ -47,13 +51,15 @@ def _extract_qa_note(text: str | None) -> str | None:
     return note or None
 
 
-def _strip_qa_note(text: str | None) -> str | None:
+# Return observation text with the QA issue removed.
+def _observation_without_qa_issue(text: str | None) -> str | None:
     if not text:
         return None
     stripped = re.sub(r"\s*QA:\s*.+$", "", text, flags=re.IGNORECASE).strip()
     return stripped or None
 
 
+# Classify a QA note's rough severity.
 def _qa_severity(note: str | None) -> str | None:
     if not note:
         return None
@@ -65,6 +71,7 @@ def _qa_severity(note: str | None) -> str | None:
     return "low"
 
 
+# Convert browser-use history into a transition trace.
 def transitions_from_agent_history(
     run_id: str,
     start_url: str,
@@ -96,9 +103,9 @@ def transitions_from_agent_history(
         obs_parts: list[str] = []
         qa_observation: str | None = None
         if mo is not None:
-            qa_observation = _extract_qa_note(mo.memory) or _extract_qa_note(mo.next_goal)
-            clean_memory = _strip_qa_note(mo.memory)
-            clean_goal = _strip_qa_note(mo.next_goal)
+            qa_observation = _qa_issue_text(mo.memory) or _qa_issue_text(mo.next_goal)
+            clean_memory = _observation_without_qa_issue(mo.memory)
+            clean_goal = _observation_without_qa_issue(mo.next_goal)
             if clean_memory:
                 obs_parts.append(f"memory: {clean_memory}")
             if clean_goal:
@@ -135,6 +142,7 @@ def transitions_from_agent_history(
     return TransitionTrace(run_id=run_id, start_url=start_url, task=task, transitions=transitions)
 
 
+# Convert screenshot paths to report-friendly paths.
 def _rel_path(abs_or_rel: str | None) -> str | None:
     if not abs_or_rel:
         return None
@@ -150,6 +158,7 @@ def _rel_path(abs_or_rel: str | None) -> str | None:
     return s
 
 
+# Write a transition trace JSON file.
 def write_transitions(path: str | Path, trace: TransitionTrace) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)

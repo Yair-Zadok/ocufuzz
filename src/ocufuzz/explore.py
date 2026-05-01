@@ -19,12 +19,14 @@ MAXIMIZED_VIEW_SIZE = {"width": 1920, "height": 1080}
 DEFAULT_AGENT_LLM_TIMEOUT_SECONDS = 240
 
 
+# Normalize an Ollama model name for LiteLLM.
 def _ollama_model_name(model: str) -> str:
     if model.startswith(("ollama/", "ollama_chat/")):
         return model
     return f"ollama_chat/{model}"
 
 
+# Resolve the configured primary LLM.
 def resolve_llm(
     model: str | None = None,
     provider: str | None = None,
@@ -56,6 +58,7 @@ def resolve_llm(
     )
 
 
+# Resolve a fallback LLM for supported providers.
 def resolve_fallback_llm(provider: str, primary_model: str) -> BaseChatModel | None:
     # Use a second Google model when the primary one hits provider limits.
     if provider != "google":
@@ -74,6 +77,7 @@ DEFAULT_TASK = (
 )
 
 
+# Run one browser-use exploration and write artifacts.
 async def run_exploration(
     start_url: str,
     *,
